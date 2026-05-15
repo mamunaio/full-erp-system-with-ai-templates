@@ -32,6 +32,7 @@ export default function HRCalendarPage() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [draftResult, setDraftResult] = useState<string | null>(null);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
   const [localEvents, setLocalEvents] = useState(events);
   const [newEvent, setNewEvent] = useState({ title: "", date: "", type: "Meeting" });
@@ -89,9 +90,36 @@ export default function HRCalendarPage() {
       color: eventColor
     };
 
-    setLocalEvents([...localEvents, addedEvent]);
+    if (editingIndex !== null) {
+      const updatedEvents = [...localEvents];
+      updatedEvents[editingIndex] = addedEvent;
+      setLocalEvents(updatedEvents);
+    } else {
+      setLocalEvents([...localEvents, addedEvent]);
+    }
+    
     setIsAddEventOpen(false);
+    setEditingIndex(null);
     setNewEvent({ title: "", date: "", type: "Meeting" });
+  }
+
+  function handleDayClick(day: number) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setNewEvent({ title: "", date: dateStr, type: "Meeting" });
+    setEditingIndex(null);
+    setIsAddEventOpen(true);
+  }
+
+  function handleEventClick(e: React.MouseEvent, event: any, index: number) {
+    e.stopPropagation();
+    const dateStr = `${year}-${String(event.month + 1).padStart(2, '0')}-${String(event.day).padStart(2, '0')}`;
+    setNewEvent({ 
+      title: event.title, 
+      date: dateStr, 
+      type: event.type.charAt(0).toUpperCase() + event.type.slice(1) 
+    });
+    setEditingIndex(index);
+    setIsAddEventOpen(true);
   }
 
   const calendarDays = [];
@@ -103,19 +131,26 @@ export default function HRCalendarPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center">
-            <CalendarIcon className="w-8 h-8 mr-3 text-injaazh-600" /> HR Calendar
+            <div className="w-12 h-12 rounded-2xl bg-injaazh-100 dark:bg-injaazh-900/30 flex items-center justify-center mr-4 shadow-inner">
+               <CalendarIcon className="w-6 h-6 text-injaazh-600" />
+            </div>
+            HR Calendar
           </h1>
-          <p className="text-slate-500 text-sm">
-            Schedule and track birthdays, holidays, and HR events.
+          <p className="text-slate-500 text-sm ml-1">
+            Manage your organization's schedule with AI-powered insights.
           </p>
         </div>
         <Button 
-          onClick={() => setIsAddEventOpen(true)}
-          className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-injaazh-600/20"
+          onClick={() => {
+            setNewEvent({ title: "", date: "", type: "Meeting" });
+            setEditingIndex(null);
+            setIsAddEventOpen(true);
+          }}
+          className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-2xl h-12 px-8 shadow-lg shadow-injaazh-600/20 transition-all hover:scale-105 active:scale-95"
         >
           <Plus className="w-5 h-5 mr-2" /> Add Event
         </Button>
@@ -123,34 +158,38 @@ export default function HRCalendarPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Calendar Main */}
-        <Card className="lg:col-span-3 border-none shadow-xl bg-white dark:bg-slate-900 overflow-hidden rounded-[32px]">
-          <CardHeader className="border-b border-slate-50 dark:border-slate-800 p-6">
+        <Card className="lg:col-span-3 border-none shadow-2xl bg-white dark:bg-slate-900/50 backdrop-blur-xl overflow-hidden rounded-[40px] border border-white/20">
+          <CardHeader className="border-b border-slate-50 dark:border-slate-800 p-8 bg-slate-50/30 dark:bg-slate-950/20">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                {months[month]} {year}
-              </h2>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl border-slate-200">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  {months[month]} <span className="text-injaazh-600">{year}</span>
+                </h2>
+              </div>
+              <div className="flex items-center space-x-3 bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <Button variant="ghost" size="icon" onClick={prevMonth} className="rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
                   <ChevronLeft className="w-5 h-5" />
                 </Button>
-                <Button variant="outline" onClick={() => setCurrentDate(new Date())} className="rounded-xl border-slate-200">
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+                <Button variant="ghost" onClick={() => setCurrentDate(new Date())} className="rounded-xl font-bold text-sm px-4 hover:bg-slate-100 dark:hover:bg-slate-700">
                   Today
                 </Button>
-                <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-xl border-slate-200">
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+                <Button variant="ghost" size="icon" onClick={nextMonth} className="rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="grid grid-cols-7 border-b border-slate-50 dark:border-slate-800">
+            <div className="grid grid-cols-7 bg-slate-50/50 dark:bg-slate-900/50">
               {days.map(day => (
-                <div key={day} className="py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <div key={day} className="py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                   {day}
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7">
+            <div className="grid grid-cols-7 border-t border-slate-50 dark:border-slate-800">
               {calendarDays.map((day, idx) => {
                 const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
                 const dayEvents = localEvents.filter(e => e.day === day && e.month === month);
@@ -158,33 +197,40 @@ export default function HRCalendarPage() {
                 return (
                   <div 
                     key={idx} 
+                    onClick={() => day && handleDayClick(day)}
                     className={cn(
-                      "min-h-[120px] p-2 border-r border-b border-slate-50 dark:border-slate-800 last:border-r-0 transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/30",
-                      !day && "bg-slate-50/30 dark:bg-slate-950/30"
+                      "min-h-[140px] p-3 border-r border-b border-slate-50 dark:border-slate-800 last:border-r-0 transition-all cursor-pointer relative group",
+                      !day ? "bg-slate-50/30 dark:bg-slate-950/30" : "hover:bg-injaazh-50/30 dark:hover:bg-injaazh-900/10"
                     )}
                   >
                     {day && (
-                      <div className="space-y-2">
-                        <span className={cn(
-                          "inline-flex w-7 h-7 items-center justify-center text-sm font-bold rounded-lg",
-                          isToday ? "bg-injaazh-600 text-white shadow-lg shadow-injaazh-600/30" : "text-slate-600 dark:text-slate-400"
-                        )}>
-                          {day}
-                        </span>
-                        <div className="space-y-1">
-                          {dayEvents.map((event, eIdx) => (
-                            <button 
-                              key={eIdx} 
-                              onClick={() => {}}
-                              className={cn(
-                                "w-full text-[10px] p-1.5 rounded-lg flex items-center shadow-sm truncate hover:scale-105 transition-transform",
-                                event.color
-                              )}
-                            >
-                              <event.icon className="w-3 h-3 mr-1 shrink-0" />
-                              <span className="truncate font-medium">{event.title}</span>
-                            </button>
-                          ))}
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className={cn(
+                            "inline-flex w-8 h-8 items-center justify-center text-sm font-black rounded-xl transition-all",
+                            isToday ? "bg-injaazh-600 text-white shadow-lg shadow-injaazh-600/40 scale-110" : "text-slate-600 dark:text-slate-400 group-hover:text-injaazh-600"
+                          )}>
+                            {day}
+                          </span>
+                          <Plus className="w-4 h-4 text-injaazh-400 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0" />
+                        </div>
+                        <div className="space-y-1.5 relative z-10">
+                          {dayEvents.map((event, eIdx) => {
+                             const originalIndex = localEvents.findIndex(le => le === event);
+                             return (
+                              <button 
+                                key={eIdx} 
+                                onClick={(e) => handleEventClick(e, event, originalIndex)}
+                                className={cn(
+                                  "w-full text-[10px] p-2 rounded-xl flex items-center shadow-sm truncate hover:ring-2 hover:ring-white transition-all transform hover:-translate-y-0.5 font-bold",
+                                  event.color
+                                )}
+                              >
+                                <event.icon className="w-3 h-3 mr-2 shrink-0" />
+                                <span className="truncate">{event.title}</span>
+                              </button>
+                             );
+                          })}
                         </div>
                       </div>
                     )}
@@ -197,20 +243,26 @@ export default function HRCalendarPage() {
 
         {/* Sidebar Events */}
         <div className="space-y-6">
-          <Card className="border-none shadow-lg bg-white dark:bg-slate-900 rounded-3xl">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">Upcoming This Month</CardTitle>
+          <Card className="border-none shadow-xl bg-white dark:bg-slate-900 rounded-[32px] overflow-hidden">
+            <CardHeader className="bg-slate-50/50 dark:bg-slate-800/30 p-6">
+              <CardTitle className="text-lg font-bold flex items-center">
+                <Sparkles className="w-5 h-5 mr-2 text-injaazh-500" /> Upcoming
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <div className="space-y-4">
-                {localEvents.filter(e => e.month === month).sort((a, b) => a.day - b.day).map((event, i) => (
-                  <div key={i} className="flex items-start space-x-3 p-3 rounded-2xl border border-slate-50 dark:border-slate-800 hover:border-injaazh-200 transition-colors">
-                    <div className={cn("p-2 rounded-xl shrink-0", event.color)}>
-                      <event.icon className="w-4 h-4" />
+                {localEvents.filter(e => e.month === month).sort((a, b) => a.day - b.day).slice(0, 5).map((event, i) => (
+                  <div 
+                    key={i} 
+                    onClick={(e) => handleEventClick(e as any, event, localEvents.indexOf(event))}
+                    className="flex items-center space-x-4 p-4 rounded-[20px] border border-slate-50 dark:border-slate-800 hover:border-injaazh-200 hover:bg-injaazh-50/30 transition-all cursor-pointer group"
+                  >
+                    <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform", event.color)}>
+                      <event.icon className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-900 dark:text-white">{event.title}</p>
-                      <p className="text-[10px] text-slate-500">{months[event.month]} {event.day}, {year}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-black text-slate-900 dark:text-white truncate">{event.title}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">{months[event.month]} {event.day}</p>
                     </div>
                   </div>
                 ))}
@@ -218,35 +270,35 @@ export default function HRCalendarPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg bg-gradient-to-br from-injaazh-600 to-blue-700 text-white rounded-3xl overflow-hidden relative group">
-            <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform">
-              <Sparkles className="w-12 h-12" />
+          <Card className="border-none shadow-2xl bg-gradient-to-br from-injaazh-600 via-injaazh-700 to-blue-800 text-white rounded-[32px] overflow-hidden relative group p-1">
+            <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-125 group-hover:rotate-12 transition-all duration-700">
+              <Sparkles className="w-16 h-16" />
             </div>
-            <CardContent className="p-6 relative">
-               <h3 className="text-lg font-bold mb-2">AI Event Planner</h3>
-               <p className="text-xs text-injaazh-100 mb-4 leading-relaxed">
-                 Would you like me to draft an announcement for the Company Foundation Day?
+            <CardContent className="p-8 relative bg-slate-900/20 backdrop-blur-sm rounded-[30px] h-full">
+               <h3 className="text-xl font-black mb-3 tracking-tight">AI Event Assistant</h3>
+               <p className="text-xs text-injaazh-100 mb-6 leading-relaxed font-medium">
+                 I can help you plan your next team outing or draft professional meeting invites.
                </p>
                <Button 
                 onClick={handleGenerateDraft}
                 disabled={isDrafting}
-                className="w-full bg-white text-injaazh-700 hover:bg-injaazh-50 rounded-xl font-bold"
+                className="w-full bg-white text-injaazh-700 hover:bg-injaazh-50 rounded-2xl font-black h-12 shadow-xl"
                >
-                 {isDrafting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate Draft"}
+                 {isDrafting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Plan"}
                </Button>
 
                {draftResult && (
-                 <div className="mt-4 p-3 bg-white/10 rounded-xl border border-white/20 text-[10px] leading-relaxed animate-in fade-in slide-in-from-bottom-2">
-                   <p className="whitespace-pre-wrap">{draftResult}</p>
+                 <div className="mt-6 p-4 bg-white/10 rounded-2xl border border-white/20 text-[11px] leading-relaxed animate-in zoom-in-95 duration-500 shadow-inner">
+                   <p className="whitespace-pre-wrap font-medium">{draftResult}</p>
                    <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="w-full mt-2 h-7 text-[10px] text-white hover:bg-white/10"
+                    className="w-full mt-4 h-9 text-[11px] text-white hover:bg-white/20 rounded-xl font-bold"
                     onClick={() => {
                       navigator.clipboard.writeText(draftResult);
                     }}
                    >
-                     Copy to Clipboard
+                     Copy Announcement
                    </Button>
                  </div>
                )}
@@ -255,58 +307,70 @@ export default function HRCalendarPage() {
         </div>
       </div>
 
-      {/* Add Event Dialog */}
+      {/* Add/Edit Event Dialog */}
       <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Add New Event</DialogTitle>
-            <DialogDescription>
-              Create a new HR event, holiday, or meeting.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-bold">Event Title</label>
-              <input 
-                placeholder="e.g. Annual Picnic" 
-                value={newEvent.title}
-                onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+        <DialogContent className="sm:max-w-[480px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] rounded-[40px] p-0 overflow-hidden">
+          <div className="p-10">
+            <DialogHeader className="mb-8">
+              <div className="w-16 h-16 rounded-3xl bg-injaazh-100 dark:bg-injaazh-900/50 flex items-center justify-center text-injaazh-600 mb-4 shadow-inner">
+                {editingIndex !== null ? <Sparkles className="w-8 h-8" /> : <Plus className="w-8 h-8" />}
+              </div>
+              <DialogTitle className="text-3xl font-black tracking-tight">
+                {editingIndex !== null ? "Edit Event" : "Create Event"}
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 font-medium">
+                {editingIndex !== null ? "Update the details for this organization event." : "Plan a new event for your team members."}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold">Date</label>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Event Title</label>
                 <input 
-                  type="date"
-                  value={newEvent.date}
-                  onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
+                  placeholder="e.g. Strategic Planning Session" 
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                  className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold text-slate-900 dark:text-white"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold">Type</label>
-                <select 
-                  value={newEvent.type}
-                  onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
-                >
-                  <option>Meeting</option>
-                  <option>Holiday</option>
-                  <option>Celebration</option>
-                </select>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Date</label>
+                  <input 
+                    type="date"
+                    value={newEvent.date}
+                    onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Category</label>
+                  <select 
+                    value={newEvent.type}
+                    onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold appearance-none"
+                  >
+                    <option>Meeting</option>
+                    <option>Holiday</option>
+                    <option>Celebration</option>
+                  </select>
+                </div>
               </div>
             </div>
+            <div className="mt-10 flex space-x-4">
+              <Button variant="ghost" onClick={() => setIsAddEventOpen(false)} className="flex-1 rounded-2xl h-14 font-black hover:bg-slate-100 dark:hover:bg-slate-800">
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEvent} className="flex-2 bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-2xl h-14 px-10 font-black shadow-xl shadow-injaazh-600/20 transition-all active:scale-95">
+                {editingIndex !== null ? "Update Event" : "Create Event"}
+              </Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddEventOpen(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleSaveEvent} className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl">Save Event</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
 
 
 
