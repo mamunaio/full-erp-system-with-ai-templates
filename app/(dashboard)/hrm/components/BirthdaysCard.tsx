@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Cake, Sparkles, Loader2, Send, Copy, Check } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -96,9 +97,11 @@ export default function BirthdaysCard() {
               </div>
             ))}
           </div>
-          <Button className="w-full mt-8 bg-slate-100 hover:bg-injaazh-100 text-slate-900 hover:text-injaazh-700 dark:bg-slate-800 dark:text-white border-none rounded-xl focus:ring-2 focus:ring-injaazh-500 transition-all">
-            View Calendar
-          </Button>
+          <Link href="/hrm/calendar">
+            <Button className="w-full mt-8 bg-slate-100 hover:bg-injaazh-100 text-slate-900 hover:text-injaazh-700 dark:bg-slate-800 dark:text-white border-none rounded-xl focus:ring-2 focus:ring-injaazh-500 transition-all">
+              View Calendar
+            </Button>
+          </Link>
         </CardContent>
       </Card>
 
