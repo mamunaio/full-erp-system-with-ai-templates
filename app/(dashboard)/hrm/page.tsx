@@ -10,6 +10,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import HRMStats from "./components/HRMStats";
+import HRMQuickActions from "./components/HRMQuickActions";
 
 export const metadata: Metadata = {
   title: "HRM Dashboard | Injaazh ERP",
@@ -123,18 +124,7 @@ export default async function HRMPage() {
                    </div>
                 </div>
                 <div className="space-y-4">
-                   <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Quick Actions</h4>
-                   <div className="grid grid-cols-1 gap-3">
-                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600 hover:bg-injaazh-50 hover:text-injaazh-700 hover:border-injaazh-200 focus:ring-2 focus:ring-injaazh-500 transition-all">
-                         <GraduationCap className="w-5 h-5 mr-3 text-injaazh-600" /> Training Programs
-                      </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600 hover:bg-injaazh-50 hover:text-injaazh-700 hover:border-injaazh-200 focus:ring-2 focus:ring-injaazh-500 transition-all">
-                         <Briefcase className="w-5 h-5 mr-3 text-injaazh-600" /> Active Job Openings
-                      </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600 hover:bg-injaazh-50 hover:text-injaazh-700 hover:border-injaazh-200 focus:ring-2 focus:ring-injaazh-500 transition-all">
-                         <Users className="w-5 h-5 mr-3 text-injaazh-600" /> Organization Chart
-                      </Button>
-                   </div>
+                   <HRMQuickActions />
                 </div>
              </div>
           </CardContent>
