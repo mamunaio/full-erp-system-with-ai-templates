@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles, Send, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Sparkles, Send, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const suggestions = [
@@ -40,6 +40,16 @@ export default function AICommandBar() {
       setIsLoading(false);
     }
   }
+
+
+  useEffect(() => {
+    if (response) {
+      const timer = setTimeout(() => {
+        setResponse(null);
+      }, 15000); // Auto-dismiss after 15 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [response]);
 
   return (
     <div className="space-y-4 mb-10">
@@ -83,11 +93,17 @@ export default function AICommandBar() {
             <div className="w-8 h-8 rounded-full bg-injaazh-100 flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4 text-injaazh-600" />
             </div>
-            <div className="prose prose-sm dark:prose-invert">
+            <div className="flex-1 prose prose-sm dark:prose-invert">
               <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                 {response}
               </p>
             </div>
+            <button 
+              onClick={() => setResponse(null)}
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4 text-slate-400" />
+            </button>
           </div>
         </div>
       )}
