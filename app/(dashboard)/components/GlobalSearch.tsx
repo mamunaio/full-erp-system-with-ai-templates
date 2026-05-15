@@ -17,9 +17,17 @@ const items = [
 export default function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
 
-  const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
+  const toggle = useCallback(() => {
+    setIsOpen((prev) => !prev);
+    setSelectedIndex(0);
+  }, []);
+
+  const filteredItems = query === "" 
+    ? items 
+    : items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -27,14 +35,38 @@ export default function GlobalSearch() {
         e.preventDefault();
         toggle();
       }
+
+      if (!isOpen) return;
+
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % filteredItems.length);
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
+      }
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (filteredItems[selectedIndex]) {
+          handleSelect(filteredItems[selectedIndex].url);
+        }
+      }
     };
+
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [toggle]);
+  }, [toggle, isOpen, filteredItems, selectedIndex]);
 
-  const filteredItems = query === "" 
-    ? items 
-    : items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
 
   const handleSelect = (url: string) => {
     router.push(url);
@@ -98,23 +130,41 @@ export default function GlobalSearch() {
                       <div key={cat} className="px-2">
                         <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2">{cat}</h4>
                         <div className="space-y-1">
-                          {catItems.map((item) => (
-                            <button
-                              key={item.id}
-                              onClick={() => handleSelect(item.url)}
-                              className="w-full flex items-center px-3 py-3 rounded-xl hover:bg-injaazh-50 dark:hover:bg-injaazh-950/30 group transition-all"
-                            >
-                              <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mr-3 group-hover:bg-injaazh-100 dark:group-hover:bg-injaazh-900 transition-colors">
-                                <item.icon className="w-4 h-4 text-slate-500 group-hover:text-injaazh-600" />
-                              </div>
-                              <span className="flex-1 text-left text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-injaazh-700">
-                                {item.name}
-                              </span>
-                              <kbd className="opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline-flex h-5 items-center gap-1 rounded border bg-white dark:bg-slate-800 px-1.5 font-mono text-[10px] font-medium text-slate-400">
-                                Enter
-                              </kbd>
-                            </button>
-                          ))}
+                          {catItems.map((item) => {
+                            const isSelected = filteredItems[selectedIndex]?.id === item.id;
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => handleSelect(item.url)}
+                                className={cn(
+                                  "w-full flex items-center px-3 py-3 rounded-xl group transition-all",
+                                  isSelected ? "bg-injaazh-50 dark:bg-injaazh-950/30" : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                )}
+                              >
+                                <div className={cn(
+                                  "w-9 h-9 rounded-lg flex items-center justify-center mr-3 transition-colors",
+                                  isSelected ? "bg-injaazh-100 dark:bg-injaazh-900" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700"
+                                )}>
+                                  <item.icon className={cn(
+                                    "w-4 h-4 transition-colors",
+                                    isSelected ? "text-injaazh-600" : "text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                                  )} />
+                                </div>
+                                <span className={cn(
+                                  "flex-1 text-left text-sm font-medium transition-colors",
+                                  isSelected ? "text-injaazh-700 dark:text-injaazh-300" : "text-slate-700 dark:text-slate-200"
+                                )}>
+                                  {item.name}
+                                </span>
+                                <kbd className={cn(
+                                  "transition-opacity hidden sm:inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium transition-all",
+                                  isSelected ? "opacity-100 bg-injaazh-100 border-injaazh-200 text-injaazh-600" : "opacity-0 group-hover:opacity-100 bg-white dark:bg-slate-800 border-slate-200 text-slate-400"
+                                )}>
+                                  Enter
+                                </kbd>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     );
