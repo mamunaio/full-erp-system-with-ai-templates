@@ -11,6 +11,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import HRMStats from "./components/HRMStats";
 import HRMQuickActions from "./components/HRMQuickActions";
+import BirthdaysCard from "./components/BirthdaysCard";
 
 export const metadata: Metadata = {
   title: "HRM Dashboard | Injaazh ERP",
@@ -131,36 +132,7 @@ export default async function HRMPage() {
         </Card>
 
         {/* Upcoming Events */}
-        <Card className="border-none shadow-md bg-white dark:bg-slate-900">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Upcoming Birthdays</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {[
-                { name: "Sarah Ahmed", date: "May 20", role: "UI Designer" },
-                { name: "Kamal Hossain", date: "May 24", role: "Backend Dev" },
-                { name: "Rina Aktar", date: "June 02", role: "HR Associate" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center space-x-4">
-                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-injaazh-600">
-                      {item.name[0]}
-                   </div>
-                   <div className="flex-1">
-                      <p className="text-sm font-bold">{item.name}</p>
-                      <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{item.role}</p>
-                   </div>
-                   <div className="text-right">
-                      <p className="text-xs font-bold text-injaazh-600">{item.date}</p>
-                   </div>
-                </div>
-              ))}
-            </div>
-            <Button className="w-full mt-8 bg-slate-100 hover:bg-injaazh-100 text-slate-900 hover:text-injaazh-700 dark:bg-slate-800 dark:text-white border-none rounded-xl focus:ring-2 focus:ring-injaazh-500 transition-all">
-              View Calendar
-            </Button>
-          </CardContent>
-        </Card>
+        <BirthdaysCard />
       </div>
     </div>
   );
