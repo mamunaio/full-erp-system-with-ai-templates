@@ -1,9 +1,16 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import LeadCard from "./LeadCard";
+import LeadCard, { Lead } from "./LeadCard";
 
-export default function KanbanColumn({ id, title, leads, totalValue }: any) {
+interface KanbanColumnProps {
+  id: string;
+  title: string;
+  leads: Lead[];
+  totalValue: number;
+}
+
+export default function KanbanColumn({ id, title, leads, totalValue }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
@@ -22,7 +29,7 @@ export default function KanbanColumn({ id, title, leads, totalValue }: any) {
         ref={setNodeRef}
         className={`min-h-[500px] rounded-xl transition-colors ${isOver ? 'bg-injaazh-50/50 dark:bg-injaazh-900/10 border-2 border-dashed border-injaazh-200' : ''}`}
       >
-        {leads?.map((lead: any) => (
+        {leads?.map((lead) => (
           <LeadCard key={lead.id} lead={lead} />
         ))}
       </div>

@@ -11,9 +11,9 @@ import {
   useSensors 
 } from "@dnd-kit/core";
 import KanbanColumn from "./KanbanColumn";
-import LeadCard from "./LeadCard";
+import LeadCard, { Lead } from "./LeadCard";
 
-const initialLeads = [
+const initialLeads: Lead[] = [
   { id: "L1", title: "Office Supplies Deal", company: "Meta Corp", value: 12000, stage: "NEW", closeDate: "Jun 12", days: 3, priority: "high", aiScore: "HOT" },
   { id: "L2", title: "Enterprise CRM", company: "Tesla Inc", value: 50000, stage: "QUALIFIED", closeDate: "Jul 05", days: 12, priority: "medium", aiScore: "HOT" },
   { id: "L3", title: "Cloud Migration", company: "SpaceX", value: 35000, stage: "CONTACTED", closeDate: "Jun 20", days: 5, priority: "low", aiScore: "WARM" },

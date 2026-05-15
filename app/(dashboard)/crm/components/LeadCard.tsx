@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Lead {
+export interface Lead {
   id: string;
   title: string;
   company: string;
