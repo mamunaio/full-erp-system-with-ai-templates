@@ -32,6 +32,9 @@ export default function HRCalendarPage() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [draftResult, setDraftResult] = useState<string | null>(null);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  
+  const [localEvents, setLocalEvents] = useState(events);
+  const [newEvent, setNewEvent] = useState({ title: "", date: "", type: "Meeting" });
 
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
@@ -55,7 +58,6 @@ export default function HRCalendarPage() {
       const data = await res.json();
       let result = data.text || data.response || "";
       
-      // Clean up if it's wrapped in a JSON string
       if (result.startsWith("{") && result.includes('"text":')) {
         try {
           const parsed = JSON.parse(result);
@@ -69,6 +71,27 @@ export default function HRCalendarPage() {
     } finally {
       setIsDrafting(false);
     }
+  }
+
+  function handleSaveEvent() {
+    if (!newEvent.title || !newEvent.date) return;
+
+    const dateObj = new Date(newEvent.date);
+    const eventIcon = newEvent.type === "Meeting" ? Users : newEvent.type === "Holiday" ? Briefcase : Cake;
+    const eventColor = newEvent.type === "Meeting" ? "text-blue-500 bg-blue-50" : newEvent.type === "Holiday" ? "text-amber-500 bg-amber-50" : "text-rose-500 bg-rose-50";
+
+    const addedEvent = {
+      day: dateObj.getDate(),
+      month: dateObj.getMonth(),
+      type: newEvent.type.toLowerCase(),
+      title: newEvent.title,
+      icon: eventIcon,
+      color: eventColor
+    };
+
+    setLocalEvents([...localEvents, addedEvent]);
+    setIsAddEventOpen(false);
+    setNewEvent({ title: "", date: "", type: "Meeting" });
   }
 
   const calendarDays = [];
@@ -130,7 +153,7 @@ export default function HRCalendarPage() {
             <div className="grid grid-cols-7">
               {calendarDays.map((day, idx) => {
                 const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
-                const dayEvents = events.filter(e => e.day === day && e.month === month);
+                const dayEvents = localEvents.filter(e => e.day === day && e.month === month);
 
                 return (
                   <div 
@@ -180,7 +203,7 @@ export default function HRCalendarPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {events.map((event, i) => (
+                {localEvents.filter(e => e.month === month).sort((a, b) => a.day - b.day).map((event, i) => (
                   <div key={i} className="flex items-start space-x-3 p-3 rounded-2xl border border-slate-50 dark:border-slate-800 hover:border-injaazh-200 transition-colors">
                     <div className={cn("p-2 rounded-xl shrink-0", event.color)}>
                       <event.icon className="w-4 h-4" />
@@ -246,6 +269,8 @@ export default function HRCalendarPage() {
               <label className="text-sm font-bold">Event Title</label>
               <input 
                 placeholder="e.g. Annual Picnic" 
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
                 className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
               />
             </div>
@@ -254,12 +279,18 @@ export default function HRCalendarPage() {
                 <label className="text-sm font-bold">Date</label>
                 <input 
                   type="date"
+                  value={newEvent.date}
+                  onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
                   className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold">Type</label>
-                <select className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500">
+                <select 
+                  value={newEvent.type}
+                  onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
+                  className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
+                >
                   <option>Meeting</option>
                   <option>Holiday</option>
                   <option>Celebration</option>
@@ -269,15 +300,13 @@ export default function HRCalendarPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddEventOpen(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={() => {
-              setIsAddEventOpen(false);
-              alert("Event added successfully! (Mock)");
-            }} className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl">Save Event</Button>
+            <Button onClick={handleSaveEvent} className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl">Save Event</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
 
 
