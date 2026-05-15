@@ -4,6 +4,14 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Users, Cake, Briefcase, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -23,6 +31,7 @@ export default function HRCalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // May 2026
   const [isDrafting, setIsDrafting] = useState(false);
   const [draftResult, setDraftResult] = useState<string | null>(null);
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
 
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
@@ -37,14 +46,24 @@ export default function HRCalendarPage() {
     setIsDrafting(true);
     setDraftResult(null);
     try {
-      const prompt = "Draft a professional and exciting company-wide announcement for 'Company Foundation Day' on May 28th. Mention that it's our 5th anniversary and we have a surprise dinner.";
+      const prompt = "Draft a professional company announcement for 'Company Foundation Day' on May 28th. Just provide the text, no JSON.";
       const res = await fetch("/api/ai/query", {
         method: "POST",
         body: JSON.stringify({ query: prompt }),
         headers: { "Content-Type": "application/json" }
       });
       const data = await res.json();
-      setDraftResult(data.text || data.response);
+      let result = data.text || data.response || "";
+      
+      // Clean up if it's wrapped in a JSON string
+      if (result.startsWith("{") && result.includes('"text":')) {
+        try {
+          const parsed = JSON.parse(result);
+          result = parsed.text || result;
+        } catch (e) {}
+      }
+      
+      setDraftResult(result);
     } catch (err) {
       setDraftResult("Unable to generate draft. Please try again later.");
     } finally {
@@ -72,7 +91,7 @@ export default function HRCalendarPage() {
           </p>
         </div>
         <Button 
-          onClick={() => alert("Add Event Feature Coming Soon!")}
+          onClick={() => setIsAddEventOpen(true)}
           className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-injaazh-600/20"
         >
           <Plus className="w-5 h-5 mr-2" /> Add Event
@@ -133,7 +152,7 @@ export default function HRCalendarPage() {
                           {dayEvents.map((event, eIdx) => (
                             <button 
                               key={eIdx} 
-                              onClick={() => alert(`Event: ${event.title}`)}
+                              onClick={() => {}}
                               className={cn(
                                 "w-full text-[10px] p-1.5 rounded-lg flex items-center shadow-sm truncate hover:scale-105 transition-transform",
                                 event.color
@@ -195,14 +214,13 @@ export default function HRCalendarPage() {
 
                {draftResult && (
                  <div className="mt-4 p-3 bg-white/10 rounded-xl border border-white/20 text-[10px] leading-relaxed animate-in fade-in slide-in-from-bottom-2">
-                   {draftResult}
+                   <p className="whitespace-pre-wrap">{draftResult}</p>
                    <Button 
                     variant="ghost" 
                     size="sm" 
                     className="w-full mt-2 h-7 text-[10px] text-white hover:bg-white/10"
                     onClick={() => {
                       navigator.clipboard.writeText(draftResult);
-                      alert("Draft copied to clipboard!");
                     }}
                    >
                      Copy to Clipboard
@@ -213,7 +231,53 @@ export default function HRCalendarPage() {
           </Card>
         </div>
       </div>
+
+      {/* Add Event Dialog */}
+      <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Add New Event</DialogTitle>
+            <DialogDescription>
+              Create a new HR event, holiday, or meeting.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold">Event Title</label>
+              <input 
+                placeholder="e.g. Annual Picnic" 
+                className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold">Date</label>
+                <input 
+                  type="date"
+                  className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold">Type</label>
+                <select className="w-full p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 outline-none focus:ring-2 focus:ring-injaazh-500">
+                  <option>Meeting</option>
+                  <option>Holiday</option>
+                  <option>Celebration</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddEventOpen(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={() => {
+              setIsAddEventOpen(false);
+              alert("Event added successfully! (Mock)");
+            }} className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl">Save Event</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
 
