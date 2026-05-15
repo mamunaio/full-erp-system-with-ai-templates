@@ -1,6 +1,8 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;
@@ -9,8 +11,6 @@ export default auth((req) => {
   // 1. Tenant Detection from Hostname (Subdomain)
   const hostname = req.headers.get("host");
   // Assuming dev is localhost:3000 and prod is injaazh.com
-  // Subdomains like tenant1.injaazh.com
-  const subdomain = hostname?.split(".")[0];
   const isMainDomain = hostname === "localhost:3000" || hostname === "localhost:3001" || hostname === "localhost:3005" || hostname === "injaazh.com";
 
   // 2. Route Protection
@@ -45,8 +45,6 @@ export default auth((req) => {
       return NextResponse.redirect(new URL("/dashboard", nextUrl));
     }
   }
-
-  // 4. Multi-tenant Check
 
   return NextResponse.next();
 });

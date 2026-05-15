@@ -55,7 +55,7 @@ export default function KanbanBoard() {
     setActiveId(null);
   }
 
-  const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
+  const activeLead = activeId ? (leads.find(l => l.id === activeId) as Lead) : null;
 
   return (
     <div className="flex space-x-6 overflow-x-auto pb-8 custom-scrollbar">
