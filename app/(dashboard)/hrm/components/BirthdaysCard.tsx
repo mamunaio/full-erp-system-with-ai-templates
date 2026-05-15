@@ -25,6 +25,8 @@ export default function BirthdaysCard() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
+  const [isSending, setIsSending] = useState(false);
+
   async function generateWish(emp: any) {
     setSelectedEmp(emp);
     setWish("");
@@ -44,6 +46,15 @@ export default function BirthdaysCard() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function handleSend() {
+    setIsSending(true);
+    // Simulate API call to send email/notification
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsSending(false);
+    alert(`Birthday wish sent to ${selectedEmp.name}!`);
+    setSelectedEmp(null);
   }
 
   function copyToClipboard() {
@@ -120,30 +131,41 @@ export default function BirthdaysCard() {
             )}
           </div>
 
-          <DialogFooter className="flex flex-row space-x-2 sm:justify-end">
+          <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
             <Button
               variant="outline"
               onClick={() => generateWish(selectedEmp)}
-              className="rounded-xl"
-              disabled={isLoading}
+              className="rounded-xl border-slate-200"
+              disabled={isLoading || isSending}
             >
               <Sparkles className="w-4 h-4 mr-2 text-injaazh-600" /> Regenerate
             </Button>
-            <Button
-              onClick={copyToClipboard}
-              className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl min-w-[120px]"
-              disabled={isLoading}
-            >
-              {isCopied ? (
-                <>
-                  <Check className="w-4 h-4 mr-2" /> Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 mr-2" /> Copy Wish
-                </>
-              )}
-            </Button>
+            
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="secondary"
+                onClick={copyToClipboard}
+                className="rounded-xl"
+                disabled={isLoading || isSending || !wish}
+              >
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
+              <Button
+                onClick={handleSend}
+                className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl min-w-[120px]"
+                disabled={isLoading || isSending || !wish}
+              >
+                {isSending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" /> Send Wish
+                  </>
+                )}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
