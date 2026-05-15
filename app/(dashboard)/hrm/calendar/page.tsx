@@ -32,8 +32,15 @@ export default function HRCalendarPage() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [draftResult, setDraftResult] = useState<string | null>(null);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // May 2026
+  const [isDrafting, setIsDrafting] = useState(false);
+  const [draftResult, setDraftResult] = useState<string | null>(null);
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [broadcastProgress, setBroadcastProgress] = useState(0);
+
   const [localEvents, setLocalEvents] = useState(events);
   const [newEvent, setNewEvent] = useState({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
 
@@ -97,13 +104,37 @@ export default function HRCalendarPage() {
     } else {
       setLocalEvents([...localEvents, addedEvent]);
       if (newEvent.notifyWhatsApp) {
-        alert(`Broadcast started! AI is sending WhatsApp updates to all 15 employees for: ${newEvent.title}`);
+        startBroadcast();
       }
     }
     
-    setIsAddEventOpen(false);
-    setEditingIndex(null);
-    setNewEvent({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
+    if (!newEvent.notifyWhatsApp) {
+      setIsAddEventOpen(false);
+      setEditingIndex(null);
+      setNewEvent({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
+    }
+  }
+
+  function startBroadcast() {
+    setIsBroadcasting(true);
+    setBroadcastProgress(0);
+    const total = 15;
+    let current = 0;
+    
+    const interval = setInterval(() => {
+      current += 1;
+      setBroadcastProgress(Math.floor((current / total) * 100));
+      
+      if (current >= total) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsBroadcasting(false);
+          setIsAddEventOpen(false);
+          setEditingIndex(null);
+          setNewEvent({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
+        }, 1000);
+      }
+    }, 200);
   }
 
   function handleDayClick(day: number) {
@@ -315,83 +346,106 @@ export default function HRCalendarPage() {
       <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
         <DialogContent className="sm:max-w-[480px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] rounded-[40px] p-0 overflow-hidden">
           <div className="p-10">
-            <DialogHeader className="mb-8">
-              <div className="w-16 h-16 rounded-3xl bg-injaazh-100 dark:bg-injaazh-900/50 flex items-center justify-center text-injaazh-600 mb-4 shadow-inner">
-                {editingIndex !== null ? <Sparkles className="w-8 h-8" /> : <Plus className="w-8 h-8" />}
-              </div>
-              <DialogTitle className="text-3xl font-black tracking-tight">
-                {editingIndex !== null ? "Edit Event" : "Create Event"}
-              </DialogTitle>
-              <DialogDescription className="text-slate-500 font-medium">
-                {editingIndex !== null ? "Update the details for this organization event." : "Plan a new event for your team members."}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Event Title</label>
-                <input 
-                  placeholder="e.g. Strategic Planning Session" 
-                  value={newEvent.title}
-                  onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                  className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold text-slate-900 dark:text-white"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-6">
+            {isBroadcasting ? (
+              <div className="py-12 flex flex-col items-center text-center space-y-6 animate-in zoom-in-95">
+                <div className="w-24 h-24 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center relative">
+                  <div className="absolute inset-0 rounded-full border-4 border-green-500 border-t-transparent animate-spin" />
+                  <svg className="w-12 h-12 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.012 2.25c-5.387 0-9.754 4.367-9.754 9.754 0 1.722.447 3.398 1.298 4.874l-1.381 5.045 5.163-1.353c1.42.775 3.018 1.187 4.674 1.187 5.387 0 9.754-4.367 9.754-9.754 0-5.387-4.367-9.754-9.754-9.754zm5.727 13.805c-.242.684-1.21 1.258-1.666 1.332-.445.074-.99.111-2.903-.684-2.45-.99-4.037-3.486-4.156-3.649-.124-.163-.996-1.328-.996-2.531 0-1.203.633-1.796.858-2.043.225-.247.495-.309.658-.309.163 0 .326.002.467.009.15.008.35-.057.548.423.198.48.675 1.644.733 1.761.058.117.098.254.02.411-.078.156-.118.254-.236.39-.118.136-.248.305-.353.409-.118.118-.242.247-.104.485.138.238.614 1.01 1.318 1.636.907.807 1.669 1.055 1.907 1.174.238.118.376.098.514-.06.138-.156.594-.69.753-.926.158-.236.316-.198.534-.117.218.081 1.385.653 1.623.771.238.118.396.176.455.274.059.098.059.566-.183 1.25z"/></svg>
+                </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Date</label>
-                  <input 
-                    type="date"
-                    value={newEvent.date}
-                    onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
-                    className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold"
+                  <h3 className="text-2xl font-black">WhatsApp Broadcasting</h3>
+                  <p className="text-slate-500 font-bold">Sending AI-generated updates to 15 employees...</p>
+                </div>
+                <div className="w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                  <div 
+                    className="h-full bg-green-500 transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.5)]" 
+                    style={{ width: `${broadcastProgress}%` }} 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Category</label>
-                  <select 
-                    value={newEvent.type}
-                    onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
-                    className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold appearance-none"
-                  >
-                    <option>Meeting</option>
-                    <option>Holiday</option>
-                    <option>Celebration</option>
-                  </select>
-                </div>
+                <p className="text-xl font-black text-green-600">{broadcastProgress}% Complete</p>
               </div>
-              
-              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/30 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.012 2.25c-5.387 0-9.754 4.367-9.754 9.754 0 1.722.447 3.398 1.298 4.874l-1.381 5.045 5.163-1.353c1.42.775 3.018 1.187 4.674 1.187 5.387 0 9.754-4.367 9.754-9.754 0-5.387-4.367-9.754-9.754-9.754zm5.727 13.805c-.242.684-1.21 1.258-1.666 1.332-.445.074-.99.111-2.903-.684-2.45-.99-4.037-3.486-4.156-3.649-.124-.163-.996-1.328-.996-2.531 0-1.203.633-1.796.858-2.043.225-.247.495-.309.658-.309.163 0 .326.002.467.009.15.008.35-.057.548.423.198.48.675 1.644.733 1.761.058.117.098.254.02.411-.078.156-.118.254-.236.39-.118.136-.248.305-.353.409-.118.118-.242.247-.104.485.138.238.614 1.01 1.318 1.636.907.807 1.669 1.055 1.907 1.174.238.118.376.098.514-.06.138-.156.594-.69.753-.926.158-.236.316-.198.534-.117.218.081 1.385.653 1.623.771.238.118.396.176.455.274.059.098.059.566-.183 1.25z"/></svg>
+            ) : (
+              <>
+                <DialogHeader className="mb-8">
+                  <div className="w-16 h-16 rounded-3xl bg-injaazh-100 dark:bg-injaazh-900/50 flex items-center justify-center text-injaazh-600 mb-4 shadow-inner">
+                    {editingIndex !== null ? <Sparkles className="w-8 h-8" /> : <Plus className="w-8 h-8" />}
                   </div>
-                  <div>
-                    <p className="text-sm font-bold">Notify via WhatsApp</p>
-                    <p className="text-[10px] text-slate-500">Send automatic updates to all members</p>
+                  <DialogTitle className="text-3xl font-black tracking-tight">
+                    {editingIndex !== null ? "Edit Event" : "Create Event"}
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-500 font-medium">
+                    {editingIndex !== null ? "Update the details for this organization event." : "Plan a new event for your team members."}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400">Event Title</label>
+                    <input 
+                      placeholder="e.g. Strategic Planning Session" 
+                      value={newEvent.title}
+                      onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                      className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400">Date</label>
+                      <input 
+                        type="date"
+                        value={newEvent.date}
+                        onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                        className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400">Category</label>
+                      <select 
+                        value={newEvent.type}
+                        onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
+                        className="w-full p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 outline-none focus:ring-4 focus:ring-injaazh-500/10 focus:border-injaazh-500 transition-all font-bold appearance-none"
+                      >
+                        <option>Meeting</option>
+                        <option>Holiday</option>
+                        <option>Celebration</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/30 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.012 2.25c-5.387 0-9.754 4.367-9.754 9.754 0 1.722.447 3.398 1.298 4.874l-1.381 5.045 5.163-1.353c1.42.775 3.018 1.187 4.674 1.187 5.387 0 9.754-4.367 9.754-9.754 0-5.387-4.367-9.754-9.754-9.754zm5.727 13.805c-.242.684-1.21 1.258-1.666 1.332-.445.074-.99.111-2.903-.684-2.45-.99-4.037-3.486-4.156-3.649-.124-.163-.996-1.328-.996-2.531 0-1.203.633-1.796.858-2.043.225-.247.495-.309.658-.309.163 0 .326.002.467.009.15.008.35-.057.548.423.198.48.675 1.644.733 1.761.058.117.098.254.02.411-.078.156-.118.254-.236.39-.118.136-.248.305-.353.409-.118.118-.242.247-.104.485.138.238.614 1.01 1.318 1.636.907.807 1.669 1.055 1.907 1.174.238.118.376.098.514-.06.138-.156.594-.69.753-.926.158-.236.316-.198.534-.117.218.081 1.385.653 1.623.771.238.118.396.176.455.274.059.098.059.566-.183 1.25z"/></svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">Notify via WhatsApp</p>
+                        <p className="text-[10px] text-slate-500">Send automatic updates to all members</p>
+                      </div>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      checked={newEvent.notifyWhatsApp}
+                      onChange={(e) => setNewEvent({...newEvent, notifyWhatsApp: e.target.checked})}
+                      className="w-6 h-6 rounded-lg border-slate-200 text-injaazh-600 focus:ring-injaazh-500 cursor-pointer"
+                    />
                   </div>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={newEvent.notifyWhatsApp}
-                  onChange={(e) => setNewEvent({...newEvent, notifyWhatsApp: e.target.checked})}
-                  className="w-6 h-6 rounded-lg border-slate-200 text-injaazh-600 focus:ring-injaazh-500 cursor-pointer"
-                />
-              </div>
-            </div>
-            <div className="mt-10 flex space-x-4">
-              <Button variant="ghost" onClick={() => setIsAddEventOpen(false)} className="flex-1 rounded-2xl h-14 font-black hover:bg-slate-100 dark:hover:bg-slate-800">
-                Cancel
-              </Button>
-              <Button onClick={handleSaveEvent} className="flex-2 bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-2xl h-14 px-10 font-black shadow-xl shadow-injaazh-600/20 transition-all active:scale-95">
-                {editingIndex !== null ? "Update Event" : "Create Event"}
-              </Button>
-            </div>
+                <div className="mt-10 flex space-x-4">
+                  <Button variant="ghost" onClick={() => setIsAddEventOpen(false)} className="flex-1 rounded-2xl h-14 font-black hover:bg-slate-100 dark:hover:bg-slate-800">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveEvent} className="flex-2 bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-2xl h-14 px-10 font-black shadow-xl shadow-injaazh-600/20 transition-all active:scale-95">
+                    {editingIndex !== null ? "Update Event" : "Create Event"}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
 
 
 
