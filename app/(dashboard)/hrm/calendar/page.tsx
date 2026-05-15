@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Users, Cake, Briefcase, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Users, Cake, Briefcase, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,9 @@ const events = [
 ];
 
 export default function HRCalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // Set to May 2026
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // May 2026
+  const [isDrafting, setIsDrafting] = useState(false);
+  const [draftResult, setDraftResult] = useState<string | null>(null);
 
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
@@ -30,6 +32,25 @@ export default function HRCalendarPage() {
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+
+  async function handleGenerateDraft() {
+    setIsDrafting(true);
+    setDraftResult(null);
+    try {
+      const prompt = "Draft a professional and exciting company-wide announcement for 'Company Foundation Day' on May 28th. Mention that it's our 5th anniversary and we have a surprise dinner.";
+      const res = await fetch("/api/ai/query", {
+        method: "POST",
+        body: JSON.stringify({ query: prompt }),
+        headers: { "Content-Type": "application/json" }
+      });
+      const data = await res.json();
+      setDraftResult(data.text || data.response);
+    } catch (err) {
+      setDraftResult("Unable to generate draft. Please try again later.");
+    } finally {
+      setIsDrafting(false);
+    }
+  }
 
   const calendarDays = [];
   for (let i = 0; i < firstDayOfMonth; i++) {
@@ -50,7 +71,10 @@ export default function HRCalendarPage() {
             Schedule and track birthdays, holidays, and HR events.
           </p>
         </div>
-        <Button className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-injaazh-600/20">
+        <Button 
+          onClick={() => alert("Add Event Feature Coming Soon!")}
+          className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-injaazh-600/20"
+        >
           <Plus className="w-5 h-5 mr-2" /> Add Event
         </Button>
       </div>
@@ -86,7 +110,7 @@ export default function HRCalendarPage() {
             </div>
             <div className="grid grid-cols-7">
               {calendarDays.map((day, idx) => {
-                const isToday = day === 15 && month === 4 && year === 2026;
+                const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
                 const dayEvents = events.filter(e => e.day === day && e.month === month);
 
                 return (
@@ -107,16 +131,17 @@ export default function HRCalendarPage() {
                         </span>
                         <div className="space-y-1">
                           {dayEvents.map((event, eIdx) => (
-                            <div 
+                            <button 
                               key={eIdx} 
+                              onClick={() => alert(`Event: ${event.title}`)}
                               className={cn(
-                                "text-[10px] p-1.5 rounded-lg flex items-center shadow-sm truncate",
+                                "w-full text-[10px] p-1.5 rounded-lg flex items-center shadow-sm truncate hover:scale-105 transition-transform",
                                 event.color
                               )}
                             >
                               <event.icon className="w-3 h-3 mr-1 shrink-0" />
                               <span className="truncate font-medium">{event.title}</span>
-                            </div>
+                            </button>
                           ))}
                         </div>
                       </div>
@@ -160,9 +185,30 @@ export default function HRCalendarPage() {
                <p className="text-xs text-injaazh-100 mb-4 leading-relaxed">
                  Would you like me to draft an announcement for the Company Foundation Day?
                </p>
-               <Button className="w-full bg-white text-injaazh-700 hover:bg-injaazh-50 rounded-xl font-bold">
-                 Generate Draft
+               <Button 
+                onClick={handleGenerateDraft}
+                disabled={isDrafting}
+                className="w-full bg-white text-injaazh-700 hover:bg-injaazh-50 rounded-xl font-bold"
+               >
+                 {isDrafting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate Draft"}
                </Button>
+
+               {draftResult && (
+                 <div className="mt-4 p-3 bg-white/10 rounded-xl border border-white/20 text-[10px] leading-relaxed animate-in fade-in slide-in-from-bottom-2">
+                   {draftResult}
+                   <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full mt-2 h-7 text-[10px] text-white hover:bg-white/10"
+                    onClick={() => {
+                      navigator.clipboard.writeText(draftResult);
+                      alert("Draft copied to clipboard!");
+                    }}
+                   >
+                     Copy to Clipboard
+                   </Button>
+                 </div>
+               )}
             </CardContent>
           </Card>
         </div>
@@ -170,3 +216,4 @@ export default function HRCalendarPage() {
     </div>
   );
 }
+
