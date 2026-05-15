@@ -52,9 +52,11 @@ export default async function HRMPage() {
         </div>
         <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
           <span className="font-bold text-injaazh-600">HR AI Insight:</span> Total Employees: {totalEmployees}. You have {departmentsCount} departments set up. 
-          <button className="ml-2 text-injaazh-500 font-bold hover:underline focus:outline-none focus:ring-2 focus:ring-injaazh-500 rounded px-1 transition-all">
-            View Talent Analytics →
-          </button>
+          <Link href="/ai-hub">
+            <button className="ml-2 text-injaazh-500 font-bold hover:underline focus:outline-none focus:ring-2 focus:ring-injaazh-500 rounded px-1 transition-all">
+              View Talent Analytics →
+            </button>
+          </Link>
         </p>
       </div>
 
