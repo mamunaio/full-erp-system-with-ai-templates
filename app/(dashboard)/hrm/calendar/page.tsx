@@ -115,26 +115,43 @@ export default function HRCalendarPage() {
     }
   }
 
-  function startBroadcast() {
+  async function startBroadcast() {
     setIsBroadcasting(true);
     setBroadcastProgress(0);
-    const total = 15;
+    const total = 1; // Testing with one recipient for now
     let current = 0;
     
-    const interval = setInterval(() => {
-      current += 1;
-      setBroadcastProgress(Math.floor((current / total) * 100));
+    try {
+      // Calling our real Meta API route
+      const res = await fetch("/api/notifications/whatsapp", {
+        method: "POST",
+        body: JSON.stringify({ 
+          to: "8801715974542", // Your test number
+          eventName: newEvent.title,
+          date: newEvent.date
+        }),
+        headers: { "Content-Type": "application/json" }
+      });
       
-      if (current >= total) {
-        clearInterval(interval);
+      const result = await res.json();
+      
+      if (result.success) {
+        setBroadcastProgress(100);
         setTimeout(() => {
           setIsBroadcasting(false);
           setIsAddEventOpen(false);
           setEditingIndex(null);
           setNewEvent({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
+          alert("Success! Real WhatsApp message sent via Meta API.");
         }, 1000);
+      } else {
+        throw new Error(result.error?.message || "Failed to send");
       }
-    }, 200);
+    } catch (err: any) {
+      console.error(err);
+      alert(`WhatsApp Error: ${err.message}`);
+      setIsBroadcasting(false);
+    }
   }
 
   function handleDayClick(day: number) {
