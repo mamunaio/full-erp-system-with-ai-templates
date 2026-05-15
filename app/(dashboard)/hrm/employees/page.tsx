@@ -1,19 +1,37 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HRMStats from "../components/HRMStats";
 import EmployeeTable from "../components/EmployeeTable";
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Employees | Injaazh ERP",
 };
 
-export default function EmployeesPage() {
+export default async function EmployeesPage() {
+  const session = await auth();
+  const tenantId = (session?.user as any)?.tenantId;
+
+  const employees = await prisma.employee.findMany({
+    where: { tenantId },
+    include: {
+      department: { select: { name: true } },
+      designation: { select: { name: true } }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <Link href="/hrm" className="group flex items-center text-sm font-medium text-slate-500 hover:text-injaazh-600 transition-colors mb-2">
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to HRM
+          </Link>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Employee Directory
           </h1>
@@ -41,7 +59,7 @@ export default function EmployeesPage() {
 
       <HRMStats />
       
-      <EmployeeTable employees={[]} /> {/* Pass data from server component if needed */}
+      <EmployeeTable employees={employees as any} /> 
     </div>
   );
 }

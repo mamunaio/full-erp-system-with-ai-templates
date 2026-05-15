@@ -37,7 +37,27 @@ const categoryData = [
   { month: "Others", value: 200, color: "#e0effe" },
 ];
 
+import { useState, useEffect } from "react";
+
 export default function DashboardPage() {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/dashboard/stats");
+        const data = await res.json();
+        setStats(data);
+      } catch (error) {
+        console.error("Failed to fetch stats", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col space-y-2">
@@ -56,32 +76,32 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard 
           title="Total Revenue" 
-          value="$54,230" 
-          change="+12.5%" 
+          value={loading ? "..." : `$${stats?.revenue?.value?.toLocaleString() || '0'}`} 
+          change={stats?.revenue?.change || "+0%"} 
           trend="up" 
           data={kpiData} 
           color="#0d8ee9"
         />
         <StatsCard 
           title="Total Expenses" 
-          value="$32,150" 
-          change="-2.4%" 
+          value="$0" 
+          change="0%" 
           trend="down" 
           data={kpiData.map(d => ({ value: 1200 - d.value }))} 
           color="#f43f5e"
         />
         <StatsCard 
           title="Active Employees" 
-          value="142" 
-          change="+4 this month" 
+          value={loading ? "..." : stats?.employees?.value?.toString() || '0'} 
+          change={stats?.employees?.change || "+0"} 
           trend="up" 
           data={kpiData.slice(0, 5)} 
           color="#10b981"
         />
         <StatsCard 
           title="Open Leads" 
-          value="64" 
-          change="+18.2%" 
+          value={loading ? "..." : stats?.leads?.value?.toString() || '0'} 
+          change={stats?.leads?.change || "0%"} 
           trend="up" 
           data={kpiData} 
           color="#8b5cf6"
@@ -168,28 +188,34 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <div className="flex items-center space-x-4">
-                    <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center",
-                      i % 2 === 0 ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
-                    )}>
-                      {i % 2 === 0 ? <ShoppingCart className="w-5 h-5" /> : <Wallet className="w-5 h-5" />}
+              {loading ? (
+                <div className="flex items-center justify-center h-40 text-slate-400">Loading...</div>
+              ) : stats?.transactions?.length > 0 ? (
+                stats.transactions.map((i: any) => (
+                  <div key={i.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <ShoppingCart className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{i.title}</p>
+                        <p className="text-[10px] text-slate-500">{new Date(i.date).toLocaleDateString()} • {i.contact}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold">{i % 2 === 0 ? "Product Sale" : "Utility Bill"}</p>
-                      <p className="text-[10px] text-slate-500">May 1{i}, 2026 • 10:30 AM</p>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-emerald-600">
+                        +${i.amount.toLocaleString()}
+                      </p>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">{i.status}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={cn("text-sm font-bold", i % 2 === 0 ? "text-emerald-600" : "text-rose-600")}>
-                      {i % 2 === 0 ? "+" : "-"}${350 * i}.00
-                    </p>
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Completed</p>
-                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center h-40 text-slate-400">
+                  <Clock className="w-8 h-8 mb-2 opacity-20" />
+                  <p className="text-sm">No recent transactions</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -203,27 +229,32 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { name: "Server Rack 42U", stock: 2, min: 5, img: "SR" },
-                { name: "Cisco Switch 24P", stock: 1, min: 3, img: "CS" },
-                { name: "RJ45 Connectors", stock: 45, min: 100, img: "RJ" },
-              ].map((item) => (
-                <div key={item.name} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-400">
-                      {item.img}
+              {loading ? (
+                <div className="flex items-center justify-center h-40 text-slate-400">Loading...</div>
+              ) : stats?.lowStock?.length > 0 ? (
+                stats.lowStock.map((item: any) => (
+                  <div key={item.name} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-400">
+                        {item.img}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{item.name}</p>
+                        <p className="text-[10px] text-slate-500">Min Stock: {item.min}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold">{item.name}</p>
-                      <p className="text-[10px] text-slate-500">Min Stock: {item.min}</p>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-rose-600">{item.stock}</p>
+                      <p className="text-[10px] text-slate-400">Available</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-rose-600">{item.stock}</p>
-                    <p className="text-[10px] text-slate-400">Available</p>
-                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center h-40 text-slate-400">
+                  <CheckCircle2 className="w-8 h-8 mb-2 text-emerald-500/20" />
+                  <p className="text-sm">Stock levels are healthy</p>
                 </div>
-              ))}
+              )}
             </div>
             <Button className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-white border-none">
               Reorder All

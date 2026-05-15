@@ -7,10 +7,10 @@ export class ContextBuilder {
     const monthStart = startOfMonth(now);
 
     // Intent detection (simple keyword matching)
-    const needsFinance = /revenue|profit|invoice|payment|cost/i.test(query);
-    const needsInventory = /stock|inventory|product|material|warehouse/i.test(query);
-    const needsHR = /employee|attendance|leave|salary|staff/i.test(query);
-    const needsCRM = /lead|customer|contact|deal|pipeline/i.test(query);
+    const needsFinance = /revenue|profit|invoice|payment|cost|প্রফিট|লাভ|খরচ|ইনভয়েস|পেমেন্ট/i.test(query);
+    const needsInventory = /stock|inventory|product|material|warehouse|স্টক|ইনভেন্টরি|পণ্য|মালামাল|গুদাম/i.test(query);
+    const needsHR = /employee|attendance|leave|salary|staff|কর্মচারী|উপস্থিতি|ছুটি|বেতন/i.test(query);
+    const needsCRM = /lead|customer|contact|deal|pipeline|লিড|কাস্টমার|যোগাযোগ|ডিল/i.test(query);
 
     const context: any = {
       timestamp: now.toISOString(),
@@ -36,7 +36,12 @@ export class ContextBuilder {
     if (needsHR) {
       context.data.hr = {
         totalEmployees: await prisma.employee.count({ where: { tenantId } }),
-        activeLeaves: await prisma.leaveRequest.count({ where: { tenantId, status: "APPROVED" } })
+        activeLeaves: await prisma.leave.count({ 
+          where: { 
+            employee: { tenantId }, 
+            status: "APPROVED" 
+          } 
+        })
       };
     }
 

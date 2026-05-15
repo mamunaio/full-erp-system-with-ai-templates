@@ -21,15 +21,19 @@ export default function AICommandBar() {
     setResponse(null);
 
     try {
-      // For now, we mock the response or call a generic AI endpoint
-      // In a real app, this would be a POST to /api/ai/query
       const res = await fetch("/api/ai/query", {
         method: "POST",
         body: JSON.stringify({ query }),
         headers: { "Content-Type": "application/json" }
       });
       const data = await res.json();
-      setResponse(data.response);
+      
+      if (data.error) {
+        setResponse(`Error: ${data.error}`);
+      } else {
+        // Handle both 'text' and 'response' fields for compatibility
+        setResponse(data.text || data.response);
+      }
     } catch (err) {
       setResponse("I'm sorry, I couldn't process that query right now.");
     } finally {

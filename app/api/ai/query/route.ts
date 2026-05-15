@@ -1,8 +1,9 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { gemini } from "@/lib/ai/gemini.client";
-import { MASTER_SYSTEM_PROMPT } from "@/lib/ai/prompts";
-import { ContextBuilder } from "@/lib/ai/context.builder";
+import prisma from "@/lib/prisma";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export const POST = auth(async function POST(req) {
   try {
@@ -13,21 +14,68 @@ export const POST = auth(async function POST(req) {
     const { query } = await req.json();
     const tenantId = (req.auth.user as any).tenantId;
 
-    // 1. Build Context
-    const context = await ContextBuilder.buildForQuery(tenantId, query);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // 2. Prepare Final Prompt
-    const finalSystemPrompt = `${MASTER_SYSTEM_PROMPT}\n\nREAL-TIME ERP DATA CONTEXT:\n${context}`;
+    // Fetch Context
+    const [employeeCount, deptCount, presentToday, lowStockCount, totalRevenue] = await Promise.all([
+      prisma.employee.count({ where: { tenantId } }),
+      prisma.department.count({ where: { tenantId } }),
+      prisma.attendance.count({ 
+        where: { 
+          employee: { tenantId },
+          date: { gte: today },
+          status: "PRESENT"
+        } 
+      }),
+      prisma.stock.count({ where: { tenantId, quantity: { lte: 10 } } }),
+      prisma.salesOrder.aggregate({
+        where: { tenantId, status: "COMPLETED" },
+        _sum: { total: true }
+      })
+    ]);
 
-    // 3. Generate AI Response
-    const aiResponse = await gemini.generateJSON(query, finalSystemPrompt);
+    const context = `
+      You are Injaazh AI. Respond in Bengali.
+      Current Business Status:
+      - Employees: ${employeeCount}
+      - Departments: ${deptCount}
+      - Present Today: ${presentToday}
+      - Low Stock: ${lowStockCount}
+      - Total Revenue: $${totalRevenue._sum.total || 0}
+      
+      User Question: "${query}"
+      
+      Instructions:
+      1. For summary/overview, return a RAW JSON object WITHOUT any markdown formatting or code blocks.
+      2. JSON structure:
+      {
+        "text": "Greeting in Bengali...",
+        "type": "insight",
+        "content": [
+          { "title": "Employees", "description": "...", "severity": "info" },
+          { "title": "Inventory", "description": "...", "severity": "info" },
+          { "title": "Revenue", "description": "...", "severity": "info" }
+        ]
+      }
+      3. For other questions, use plain text with emojis.
+    `;
 
-    return NextResponse.json(aiResponse);
-  } catch (error) {
-    console.error("AI Query Error:", error);
-    return NextResponse.json({ 
-      text: "I encountered an error while processing your request. Please try again later.",
-      severity: "error"
-    }, { status: 500 });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const result = await model.generateContent(context);
+    let text = result.response.text().trim();
+
+    // Sanitize: Remove markdown code blocks if AI included them
+    text = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+
+    try {
+      const jsonRes = JSON.parse(text);
+      return NextResponse.json(jsonRes);
+    } catch (e) {
+      return NextResponse.json({ text });
+    }
+  } catch (error: any) {
+    console.error("[AI_QUERY_ERROR]", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 });

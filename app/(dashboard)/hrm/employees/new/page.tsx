@@ -2,12 +2,27 @@ import { Metadata } from "next";
 import EmployeeForm from "../../components/EmployeeForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import prisma from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Add New Employee | Injaazh ERP",
 };
 
-export default function NewEmployeePage() {
+export default async function NewEmployeePage() {
+  const session = await auth();
+  const tenantId = (session?.user as any)?.tenantId;
+
+  const departments = await prisma.department.findMany({
+    where: { tenantId },
+    select: { id: true, name: true }
+  });
+
+  const designations = await prisma.designation.findMany({
+    where: { tenantId },
+    select: { id: true, name: true }
+  });
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="space-y-1">
@@ -23,7 +38,7 @@ export default function NewEmployeePage() {
         </p>
       </div>
 
-      <EmployeeForm />
+      <EmployeeForm departments={departments} designations={designations} />
     </div>
   );
 }

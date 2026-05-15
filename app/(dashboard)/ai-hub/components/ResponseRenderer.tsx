@@ -12,7 +12,7 @@ export default function ResponseRenderer({ type, content }: { type: string, cont
     return <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>;
   }
 
-  if (type === "table") {
+  if (type === "table" && content?.headers && content?.rows) {
     return (
       <div className="space-y-4 my-4">
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
@@ -42,7 +42,7 @@ export default function ResponseRenderer({ type, content }: { type: string, cont
     );
   }
 
-  if (type === "chart") {
+  if (type === "chart" && content?.datasets && content?.labels) {
     return (
       <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 my-4">
         <div className="flex justify-between items-center mb-6">
@@ -65,7 +65,7 @@ export default function ResponseRenderer({ type, content }: { type: string, cont
     );
   }
 
-  if (type === "insight") {
+  if (type === "insight" && Array.isArray(content)) {
     return (
       <div className="space-y-3 my-4">
         {content.map((insight: any, i: number) => (
@@ -96,5 +96,6 @@ export default function ResponseRenderer({ type, content }: { type: string, cont
     );
   }
 
-  return null;
+  // Fallback for unexpected data structure
+  return <p className="text-sm leading-relaxed whitespace-pre-wrap">{typeof content === 'string' ? content : JSON.stringify(content)}</p>;
 }

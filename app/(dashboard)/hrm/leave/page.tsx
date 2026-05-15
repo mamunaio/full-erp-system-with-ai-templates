@@ -1,5 +1,6 @@
 import { Metadata } from "next";
-import { Plus, CheckCircle2, XCircle, Clock, FileText } from "lucide-react";
+import Link from "next/link";
+import { Plus, CheckCircle2, XCircle, Clock, FileText, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,10 @@ export default function LeavePage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <Link href="/hrm" className="group flex items-center text-sm font-medium text-slate-500 hover:text-injaazh-600 transition-colors mb-2">
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to HRM
+          </Link>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Leave Management
           </h1>

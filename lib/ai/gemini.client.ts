@@ -26,9 +26,22 @@ export class GeminiClient {
         ],
       });
       const response = await result.response;
-      return JSON.parse(response.text());
+      const text = response.text();
+      
+      try {
+        // Clean the response in case it has markdown blocks
+        const cleaned = text.replace(/```json\n?|```/g, "").trim();
+        return JSON.parse(cleaned);
+      } catch (e) {
+        console.error("Gemini JSON Parse Error. Raw Text:", text);
+        return { 
+          text: text, 
+          type: "text",
+          severity: "info"
+        };
+      }
     } catch (error) {
-      console.error("Gemini JSON Error:", error);
+      console.error("Gemini Generation Error:", error);
       throw error;
     }
   }

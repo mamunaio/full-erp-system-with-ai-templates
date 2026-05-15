@@ -55,11 +55,11 @@ export default function Sidebar() {
       {/* Brand Logo */}
       <div className="h-16 flex items-center px-6 border-b border-slate-900 overflow-hidden shrink-0">
         <div className="w-8 h-8 rounded-lg bg-injaazh-600 flex items-center justify-center text-white font-bold shrink-0 shadow-lg shadow-injaazh-600/20">
-          N
+          I
         </div>
         {!isSidebarCollapsed && (
           <span className="ml-3 font-bold text-xl text-white tracking-tight animate-in fade-in slide-in-from-left-2">
-            Nexus<span className="text-injaazh-500">ERP</span>
+            Injaazh<span className="text-injaazh-500">ERP</span>
           </span>
         )}
       </div>

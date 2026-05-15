@@ -1,73 +1,87 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { startOfDay, endOfDay } from "date-fns";
 
-export async function GET(req: Request) {
+export const GET = auth(async function GET(req) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const { searchParams } = new URL(req.url);
-    const date = searchParams.get("date");
-    const month = searchParams.get("month");
-    const year = searchParams.get("year");
-
-    const attendances = await prisma.attendance.findMany({
-      where: {
-        employee: { tenantId: session.user.tenantId },
-        ...(date && { date: new Date(date) }),
-        ...(month && year && {
-          date: {
-            gte: new Date(parseInt(year), parseInt(month) - 1, 1),
-            lt: new Date(parseInt(year), parseInt(month), 1),
-          }
-        }),
-      },
-      include: { employee: { select: { name: true, employeeId: true } } },
-    });
-
-    return NextResponse.json(attendances);
-  } catch (error) {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
-}
-
-export async function POST(req: Request) {
-  try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const { employeeId, type, note } = await req.json();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let attendance = await prisma.attendance.findFirst({
-      where: { employeeId, date: today }
-    });
-
-    if (type === "check-in") {
-      if (attendance) return NextResponse.json({ error: "Already checked in" }, { status: 400 });
-      
-      const status = new Date().getHours() >= 9 ? "LATE" : "PRESENT";
-      attendance = await prisma.attendance.create({
-        data: {
-          employeeId,
-          date: today,
-          checkIn: new Date(),
-          status,
-          note
-        }
-      });
-    } else {
-      if (!attendance) return NextResponse.json({ error: "Not checked in yet" }, { status: 400 });
-      attendance = await prisma.attendance.update({
-        where: { id: attendance.id },
-        data: { checkOut: new Date() }
-      });
+    if (!req.auth?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    return NextResponse.json(attendance);
+    const tenantId = (req.auth.user as any).tenantId;
+    const today = new Date();
+    const dayStart = startOfDay(today);
+    const dayEnd = endOfDay(today);
+
+    const totalEmployees = await prisma.employee.count({
+      where: { tenantId, status: "ACTIVE" }
+    });
+
+    const attendanceRecords = await prisma.attendance.findMany({
+      where: {
+        employee: { tenantId },
+        date: { gte: dayStart, lte: dayEnd }
+      }
+    });
+
+    const present = attendanceRecords.filter(r => r.status === "PRESENT").length;
+    const late = attendanceRecords.filter(r => r.status === "LATE").length;
+    const halfDay = attendanceRecords.filter(r => r.status === "HALFDAY").length;
+    const absent = totalEmployees - (present + late + halfDay);
+
+    const onLeave = await prisma.leave.count({
+      where: {
+        employee: { tenantId },
+        status: "APPROVED",
+        from: { lte: today },
+        to: { gte: today }
+      }
+    });
+
+    return NextResponse.json({
+      present,
+      absent: Math.max(0, absent),
+      late,
+      onLeave
+    });
   } catch (error) {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
-}
+});
+
+export const POST = auth(async function POST(req) {
+  try {
+    if (!req.auth?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { employeeId, status, note } = await req.json();
+    const today = startOfDay(new Date());
+
+    const record = await prisma.attendance.upsert({
+      where: {
+        employeeId_date: {
+          employeeId,
+          date: today
+        }
+      },
+      update: {
+        status,
+        note,
+        checkIn: status === "PRESENT" ? new Date() : undefined
+      },
+      create: {
+        employeeId,
+        date: today,
+        status,
+        note,
+        checkIn: status === "PRESENT" ? new Date() : undefined
+      }
+    });
+
+    return NextResponse.json(record);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+});
