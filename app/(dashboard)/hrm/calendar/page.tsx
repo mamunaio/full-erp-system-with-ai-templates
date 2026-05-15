@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Users, Cake, Briefcase, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,10 +179,25 @@ export default function HRCalendarPage() {
     calendarDays.push(i);
   }
 
+  function handleDeleteEvent() {
+    if (editingIndex === null) return;
+    
+    const updatedEvents = [...localEvents];
+    updatedEvents.splice(editingIndex, 1);
+    setLocalEvents(updatedEvents);
+    setIsAddEventOpen(false);
+    setEditingIndex(null);
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Link href="/hrm" className="text-xs font-bold text-injaazh-600 hover:underline flex items-center bg-injaazh-50 px-3 py-1.5 rounded-xl transition-all">
+              <ChevronLeft className="w-3 h-3 mr-1" /> Back to HRM
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center">
             <div className="w-12 h-12 rounded-2xl bg-injaazh-100 dark:bg-injaazh-900/30 flex items-center justify-center mr-4 shadow-inner">
                <CalendarIcon className="w-6 h-6 text-injaazh-600" />
@@ -446,6 +462,11 @@ export default function HRCalendarPage() {
                   <Button variant="ghost" onClick={() => setIsAddEventOpen(false)} className="flex-1 rounded-2xl h-14 font-black hover:bg-slate-100 dark:hover:bg-slate-800">
                     Cancel
                   </Button>
+                  {editingIndex !== null && (
+                    <Button variant="outline" onClick={handleDeleteEvent} className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl h-14 font-black">
+                      Delete
+                    </Button>
+                  )}
                   <Button onClick={handleSaveEvent} className="flex-2 bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-2xl h-14 px-10 font-black shadow-xl shadow-injaazh-600/20 transition-all active:scale-95">
                     {editingIndex !== null ? "Update Event" : "Create Event"}
                   </Button>

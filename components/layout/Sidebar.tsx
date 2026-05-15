@@ -76,6 +76,12 @@ export default function Sidebar() {
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 custom-scrollbar">
         <div className="space-y-1.5">
           {menuItems.map((item) => {
+            // Role-based filtering
+            const userRole = (session?.user as any)?.role;
+            if (userRole === "USER" && item.module !== "dashboard") {
+              return null;
+            }
+
             const isActive = pathname.startsWith(item.href);
             
             return (
@@ -112,23 +118,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* User Info */}
-      <div className="mt-auto p-4 border-t border-slate-900">
-        <div className={cn(
-          "flex items-center p-2 rounded-xl bg-slate-900/50 transition-all",
-          isSidebarCollapsed ? "justify-center" : "space-x-3"
-        )}>
-          <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
-            <UserCircle className="w-6 h-6" />
-          </div>
-          {!isSidebarCollapsed && (
-            <div className="overflow-hidden animate-in fade-in slide-in-from-left-4">
-              <p className="text-sm font-semibold text-white truncate">{session?.user?.name || "John Doe"}</p>
-              <p className="text-[10px] text-slate-500 truncate">{session?.user?.role || "Administrator"}</p>
-            </div>
-          )}
-        </div>
-      </div>
     </aside>
   );
 }

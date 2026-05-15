@@ -86,13 +86,14 @@ model User {
   auditLogs AuditLog[]
   aiQueries AIQuery[]
   timeLogs  TimeLog[]
-  employee  Employee?     @relation("UserToEmployee", fields: [employeeId], references: [id])
-  employeeId String? @db.ObjectId @unique
+  employee  Employee[]    @relation("UserToEmployee")
+  employeeId String? @db.ObjectId
 
   @@index([tenantId, email])
 }
 
 enum UserRole {
+  OWNER
   ADMIN
   MANAGER
   USER
@@ -161,7 +162,8 @@ model Employee {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user          User?    @relation("UserToEmployee")
+  userId        String?   @db.ObjectId @unique
+  user          User?     @relation("UserToEmployee", fields: [userId], references: [id])
   attendances   Attendance[]
   leaves        Leave[]
   payrolls      Payroll[]

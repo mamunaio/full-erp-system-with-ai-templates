@@ -32,7 +32,7 @@ export const GET = auth(async function GET(req) {
 
     // 3. CRM Stats
     const openLeads = await prisma.lead.count({
-      where: { tenantId, status: { not: "CLOSED" } }
+      where: { tenantId, stage: { not: "CLOSED" } }
     });
 
     // 4. Inventory Alerts

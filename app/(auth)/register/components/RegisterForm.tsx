@@ -6,16 +6,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Loader2, Mail, Lock, User, Building, ArrowRight } from "lucide-react";
+import { Loader2, Mail, Lock, User, Building2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { toast } from "sonner";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  companyName: z.string().min(2, "Company name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  companyName: z.string().min(2, "Company name must be at least 2 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type RegisterValues = z.infer<typeof registerSchema>;
@@ -34,7 +37,6 @@ export default function RegisterForm() {
 
   async function onSubmit(data: RegisterValues) {
     setIsLoading(true);
-
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -42,117 +44,138 @@ export default function RegisterForm() {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Registration failed");
+      if (response.ok) {
+        toast.success("Workspace Initialized! Redirecting to login...");
+        router.push("/login");
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Registration failed.");
       }
-
-      toast.success("Registration successful! Please login.");
-      router.push("/login");
-    } catch (err: any) {
-      toast.error(err.message || "An unexpected error occurred");
+    } catch (err) {
+      toast.error("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-200 ml-1">Full Name</label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-              <input
-                {...register("name")}
-                className={cn(
-                  "w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-injaazh-500/50 transition-all",
-                  errors.name && "border-destructive/50"
-                )}
-                placeholder="John Doe"
-                disabled={isLoading}
-              />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Administrator Name</label>
+          <div className="relative group">
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors">
+               <User className="w-full h-full" />
             </div>
-            {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+            <input
+              {...register("name")}
+              className={cn(
+                "w-full bg-slate-900/50 dark:bg-slate-950/50 border border-white/5 rounded-2xl h-16 pl-14 pr-4 text-white font-bold placeholder:text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all",
+                errors.name && "border-rose-500/50"
+              )}
+              placeholder="Full Name"
+              disabled={isLoading}
+            />
           </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-200 ml-1">Company Name</label>
-            <div className="relative">
-              <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-              <input
-                {...register("companyName")}
-                className={cn(
-                  "w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-injaazh-500/50 transition-all",
-                  errors.companyName && "border-destructive/50"
-                )}
-                placeholder="Injaazh Corp"
-                disabled={isLoading}
-              />
-            </div>
-            {errors.companyName && <p className="text-xs text-destructive mt-1">{errors.companyName.message}</p>}
-          </div>
+          {errors.name && <p className="text-[10px] font-bold text-rose-500 mt-1 ml-1 uppercase">{errors.name.message}</p>}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-200 ml-1">Email Address</label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Workspace Email</label>
+          <div className="relative group">
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors">
+               <Mail className="w-full h-full" />
+            </div>
             <input
               {...register("email")}
               className={cn(
-                "w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-injaazh-500/50 transition-all",
-                errors.email && "border-destructive/50"
+                "w-full bg-slate-900/50 dark:bg-slate-950/50 border border-white/5 rounded-2xl h-16 pl-14 pr-4 text-white font-bold placeholder:text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all",
+                errors.email && "border-rose-500/50"
               )}
               placeholder="name@company.com"
               type="email"
               disabled={isLoading}
             />
           </div>
-          {errors.email && <p className="text-xs text-destructive mt-1">{errors.email.message}</p>}
+          {errors.email && <p className="text-[10px] font-bold text-rose-500 mt-1 ml-1 uppercase">{errors.email.message}</p>}
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-200 ml-1">Password</label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+      <div className="space-y-3">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Organization Identity</label>
+        <div className="relative group">
+          <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors">
+             <Building2 className="w-full h-full" />
+          </div>
+          <input
+            {...register("companyName")}
+            className={cn(
+              "w-full bg-slate-900/50 dark:bg-slate-950/50 border border-white/5 rounded-2xl h-16 pl-14 pr-4 text-white font-bold placeholder:text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all",
+              errors.companyName && "border-rose-500/50"
+            )}
+            placeholder="Enterprise Name"
+            disabled={isLoading}
+          />
+        </div>
+        {errors.companyName && <p className="text-[10px] font-bold text-rose-500 mt-1 ml-1 uppercase">{errors.companyName.message}</p>}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Access Key</label>
+          <div className="relative group">
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors">
+               <Lock className="w-full h-full" />
+            </div>
             <input
               {...register("password")}
               className={cn(
-                "w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-injaazh-500/50 transition-all",
-                errors.password && "border-destructive/50"
+                "w-full bg-slate-900/50 dark:bg-slate-950/50 border border-white/5 rounded-2xl h-16 pl-14 pr-4 text-white font-bold placeholder:text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all font-mono",
+                errors.password && "border-rose-500/50"
               )}
               placeholder="••••••••"
               type="password"
               disabled={isLoading}
             />
           </div>
-          {errors.password && <p className="text-xs text-destructive mt-1">{errors.password.message}</p>}
+          {errors.password && <p className="text-[10px] font-bold text-rose-500 mt-1 ml-1 uppercase">{errors.password.message}</p>}
         </div>
 
-        <div className="pt-2">
-          <p className="text-xs text-slate-400 text-center mb-4 px-4">
-            By clicking Sign Up, you agree to our{" "}
-            <Link href="#" className="text-injaazh-400 hover:underline">Terms of Service</Link> and{" "}
-            <Link href="#" className="text-injaazh-400 hover:underline">Privacy Policy</Link>.
-          </p>
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-injaazh-600 hover:bg-injaazh-700 text-white py-6 rounded-xl font-semibold text-lg transition-all shadow-lg shadow-injaazh-600/20 group"
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                Create Account
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </Button>
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm Key</label>
+          <div className="relative group">
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors">
+               <Lock className="w-full h-full" />
+            </div>
+            <input
+              {...register("confirmPassword")}
+              className={cn(
+                "w-full bg-slate-900/50 dark:bg-slate-950/50 border border-white/5 rounded-2xl h-16 pl-14 pr-4 text-white font-bold placeholder:text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all font-mono",
+                errors.confirmPassword && "border-rose-500/50"
+              )}
+              placeholder="••••••••"
+              type="password"
+              disabled={isLoading}
+            />
+          </div>
+          {errors.confirmPassword && <p className="text-[10px] font-bold text-rose-500 mt-1 ml-1 uppercase">{errors.confirmPassword.message}</p>}
         </div>
-      </form>
-    </div>
+      </div>
+
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className="w-full h-18 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black italic uppercase tracking-tighter text-xl transition-all shadow-2xl shadow-blue-600/30 active:scale-95 group overflow-hidden relative"
+      >
+        <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 italic text-[10px] flex items-center justify-center pointer-events-none">INITIALIZING...</div>
+        {isLoading ? (
+          <Loader2 className="w-7 h-7 animate-spin" />
+        ) : (
+          <span className="flex items-center">
+            INITIALIZE WORKSPACE <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-1 transition-transform" />
+          </span>
+        )}
+      </Button>
+    </form>
   );
 }

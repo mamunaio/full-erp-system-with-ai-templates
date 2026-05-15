@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { 
   FileText, TrendingUp, BarChart3, 
-  Sparkles, Download, Calendar 
+  Sparkles, Download, Calendar,
+  ArrowLeft, ChevronRight, PieChart
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function ReportsPage() {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
@@ -37,36 +39,42 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Financial Reports
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <Link href="/finance" className="group flex items-center text-[10px] font-black text-slate-400 hover:text-emerald-600 transition-all mb-4 bg-white dark:bg-slate-900 px-4 py-2 rounded-2xl w-fit shadow-sm border border-slate-100 dark:border-slate-800 uppercase tracking-[0.2em]">
+            <ArrowLeft className="w-3 h-3 mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to Finance Hub
+          </Link>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+            Financial <span className="text-emerald-600">Reports</span>
           </h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-500 text-sm font-medium">
             Generate P&L, Balance Sheet, and AI-powered business insights.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" className="rounded-xl h-11 px-6 border-slate-200">
-            <Calendar className="w-5 h-5 mr-2" /> May 2026
+        <div className="flex items-center space-x-3">
+          <Button variant="outline" className="rounded-2xl h-14 px-8 border-slate-200 dark:border-slate-800 font-bold bg-white dark:bg-slate-900 shadow-sm active:scale-95 transition-all">
+            <Calendar className="w-5 h-5 mr-3 text-slate-400" /> May 2026
           </Button>
-          <Button className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-injaazh-600/20">
-            <Download className="w-5 h-5 mr-2" /> Export All
+          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-14 px-10 font-black shadow-xl shadow-emerald-600/20 active:scale-95 transition-all">
+            <Download className="w-5 h-5 mr-3" /> Export All
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="pl" className="space-y-8">
-        <TabsList className="bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl h-14">
-          <TabsTrigger value="pl" className="rounded-xl px-8 h-12 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 shadow-sm transition-all">P&L Statement</TabsTrigger>
-          <TabsTrigger value="balance" className="rounded-xl px-8 h-12 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 shadow-sm transition-all">Balance Sheet</TabsTrigger>
-          <TabsTrigger value="cashflow" className="rounded-xl px-8 h-12 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 shadow-sm transition-all">Cash Flow</TabsTrigger>
-          <TabsTrigger value="ai" className="rounded-xl px-8 h-12 data-[state=active]:bg-injaazh-600 data-[state=active]:text-white shadow-lg transition-all flex items-center">
-            <Sparkles className="w-4 h-4 mr-2" /> AI Analysis
-          </TabsTrigger>
-        </TabsList>
+        <div className="bg-white dark:bg-slate-900 p-2 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm w-fit">
+          <TabsList className="bg-transparent h-12 space-x-1">
+            <TabsTrigger value="pl" className="rounded-xl px-8 h-10 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white font-bold transition-all">P&L Statement</TabsTrigger>
+            <TabsTrigger value="balance" className="rounded-xl px-8 h-10 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white font-bold transition-all">Balance Sheet</TabsTrigger>
+            <TabsTrigger value="cashflow" className="rounded-xl px-8 h-10 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white font-bold transition-all">Cash Flow</TabsTrigger>
+            <TabsTrigger value="ai" className="rounded-xl px-8 h-10 data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-black shadow-lg transition-all flex items-center">
+              <Sparkles className="w-4 h-4 mr-2" /> AI Analysis
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="pl" className="outline-none">
+        <TabsContent value="pl" className="outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
           <ReportContainer title="Profit & Loss Statement">
              <div className="space-y-8">
                 <ReportSection title="Revenue" total={84230}>
@@ -87,41 +95,103 @@ export default function ReportsPage() {
           </ReportContainer>
         </TabsContent>
 
-        <TabsContent value="ai" className="outline-none">
+        <TabsContent value="balance" className="outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <ReportContainer title="Balance Sheet">
+             <div className="space-y-8">
+                <ReportSection title="Assets" total={1240500}>
+                  <ReportRow label="Cash & Bank Balances" amount={842500} />
+                  <ReportRow label="Accounts Receivable" amount={158000} />
+                  <ReportRow label="Inventory Value" amount={240000} />
+                </ReportSection>
+                <ReportSection title="Liabilities" total={485200}>
+                  <ReportRow label="Accounts Payable" amount={85200} />
+                  <ReportRow label="Short-term Loans" amount={150000} />
+                  <ReportRow label="Accrued Expenses" amount={250000} />
+                </ReportSection>
+                <div className="pt-6 border-t-2 border-slate-900 dark:border-white flex justify-between items-center font-black text-2xl">
+                  <span>Equity</span>
+                  <span className="text-blue-600">$755,300</span>
+                </div>
+             </div>
+          </ReportContainer>
+        </TabsContent>
+
+        <TabsContent value="cashflow" className="outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <ReportContainer title="Cash Flow Statement">
+             <div className="space-y-8">
+                <ReportSection title="Operating Activities" total={62500}>
+                  <ReportRow label="Cash Received from Customers" amount={120000} />
+                  <ReportRow label="Cash Paid to Suppliers" amount={-57500} />
+                </ReportSection>
+                <ReportSection title="Investing Activities" total={-15000}>
+                  <ReportRow label="Purchase of Equipment" amount={-15000} />
+                </ReportSection>
+                <ReportSection title="Financing Activities" total={-10000}>
+                  <ReportRow label="Loan Repayments" amount={-10000} />
+                </ReportSection>
+                <div className="pt-6 border-t-2 border-slate-900 dark:border-white flex justify-between items-center font-black text-2xl">
+                  <span>Net Cash Increase</span>
+                  <span className="text-amber-500">$37,500</span>
+                </div>
+             </div>
+          </ReportContainer>
+        </TabsContent>
+
+        <TabsContent value="ai" className="outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="max-w-4xl mx-auto space-y-6">
             {!aiAnalysis ? (
-              <div className="bg-gradient-to-tr from-injaazh-600 to-blue-700 rounded-[32px] p-12 text-center text-white shadow-2xl shadow-injaazh-600/30 relative overflow-hidden">
-                <div className="relative z-10 space-y-6">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-3xl flex items-center justify-center mx-auto shadow-inner">
-                    <Sparkles className="w-10 h-10" />
+              <div className="bg-slate-950 rounded-[40px] p-16 text-center text-white shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-600/10 rounded-full blur-[100px] pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
+                
+                <div className="relative z-10 space-y-8">
+                  <div className="w-24 h-24 bg-white/5 backdrop-blur-2xl rounded-[32px] flex items-center justify-center mx-auto shadow-inner border border-white/10 group-hover:rotate-12 transition-transform duration-500">
+                    <Sparkles className="w-12 h-12 text-emerald-400" />
                   </div>
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-black italic tracking-tighter">AI Financial Brain</h2>
-                    <p className="text-white/70 max-w-md mx-auto">Gemini analyzes your entire ledger to find hidden patterns, risks, and growth opportunities.</p>
+                  <div className="space-y-3">
+                    <h2 className="text-4xl font-black tracking-tight">AI Financial Brain</h2>
+                    <p className="text-slate-400 max-w-md mx-auto text-sm font-medium leading-relaxed">Gemini analyzes your entire ledger to find hidden patterns, risks, and growth opportunities with institutional-grade precision.</p>
                   </div>
                   <Button 
                     onClick={generateAIAnalysis} 
                     disabled={loading}
-                    className="bg-white hover:bg-slate-100 text-injaazh-600 font-bold px-10 h-14 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-12 h-16 rounded-[24px] shadow-2xl shadow-emerald-600/20 transition-all hover:scale-105 active:scale-95 text-lg"
                   >
-                    {loading ? "Analyzing Data..." : "Generate Analysis Report"}
+                    {loading ? (
+                      <div className="flex items-center">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3" />
+                        AUDITING DATA...
+                      </div>
+                    ) : "START AI AUDIT"}
                   </Button>
                 </div>
-                <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-blue-400/20 rounded-full blur-3xl" />
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 p-10 shadow-xl prose dark:prose-invert max-w-none animate-in zoom-in-95 duration-500">
-                 <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center space-x-3 text-injaazh-600 font-bold">
-                      <Sparkles className="w-6 h-6" />
-                      <span>Gemini Intelligence</span>
+              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-slate-800 p-12 shadow-sm relative overflow-hidden animate-in zoom-in-95 duration-500">
+                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/5 rounded-full blur-3xl" />
+                 <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100 dark:border-slate-800 relative z-10">
+                    <div className="flex items-center space-x-3 text-emerald-600">
+                      <Sparkles className="w-6 h-6 animate-pulse" />
+                      <span className="font-black uppercase tracking-widest text-xs">Gemini Intelligence Audit</span>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setAiAnalysis(null)} className="text-xs">Regenerate</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setAiAnalysis(null)} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600">Regenerate Analysis</Button>
                  </div>
-                 <div dangerouslySetInnerHTML={{ __html: aiAnalysis.replace(/\n/g, '<br/>') }} />
-                 <Button className="mt-8 bg-injaazh-600 text-white rounded-xl h-11 px-8 shadow-lg shadow-injaazh-600/20">
-                    <Download className="w-4 h-4 mr-2" /> Download Report PDF
+                 
+                 <div className="relative z-10">
+                    <div 
+                      className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed space-y-4" 
+                      dangerouslySetInnerHTML={{ 
+                        __html: aiAnalysis
+                          .replace(/## (.*)/g, '<h2 class="text-2xl font-black text-slate-900 dark:text-white mt-8 mb-4 tracking-tight">$1</h2>')
+                          .replace(/### (.*)/g, '<h3 class="text-lg font-black text-slate-900 dark:text-white mt-6 mb-2 tracking-tight">$1</h3>')
+                          .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-black text-emerald-600">$1</strong>')
+                          .replace(/\* (.*)/g, '<div class="flex items-start space-x-2 mb-2"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 shrink-0"></div><span>$1</span></div>')
+                          .replace(/\d\. (.*)/g, '<div class="flex items-start space-x-2 mb-2"><span class="font-black text-emerald-600 shrink-0">$0</span><span>$1</span></div>')
+                      }} 
+                    />
+                 </div>
+                 
+                 <Button className="mt-12 bg-slate-900 dark:bg-slate-950 text-white rounded-2xl h-14 px-10 font-black shadow-xl transition-all active:scale-95">
+                    <Download className="w-5 h-5 mr-3 text-emerald-500" /> DOWNLOAD FULL AUDIT
                  </Button>
               </div>
             )}
@@ -134,35 +204,38 @@ export default function ReportsPage() {
 
 function ReportContainer({ title, children }: any) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 p-10 shadow-sm max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-10 pb-6 border-b-2 border-slate-50 dark:border-slate-800">
+    <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-slate-800 p-12 shadow-sm max-w-4xl mx-auto relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 dark:bg-slate-800/50 rounded-full blur-3xl pointer-events-none" />
+      <div className="flex justify-between items-start mb-12 pb-8 border-b-2 border-slate-50 dark:border-slate-800 relative z-10">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">{title}</h2>
-          <p className="text-slate-500 text-xs mt-1">For the period May 1, 2026 to May 31, 2026</p>
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic leading-none">{title}</h2>
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-3 opacity-60">Accounting Period: May 2026</p>
         </div>
         <div className="text-right">
-          <p className="font-bold text-sm">Injaazh ERP</p>
-          <p className="text-[10px] text-slate-400">Printed: {new Date().toLocaleDateString()}</p>
+          <p className="font-black text-xl tracking-tight text-emerald-600">Injaazh ERP</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Ref: {new Date().getFullYear()}/AUDIT/05</p>
         </div>
       </div>
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 }
 
 function ReportSection({ title, total, children }: any) {
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
-        <span>{title}</span>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 bg-slate-50 dark:bg-slate-950 px-4 py-2 rounded-lg">
+        <span>{title} Breakdown</span>
         <span>Amount (USD)</span>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-4 px-4">
         {children}
       </div>
-      <div className="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-800 font-bold text-lg">
-        <span className="text-slate-500">Total {title}</span>
-        <span>${total.toLocaleString()}</span>
+      <div className="flex justify-between items-center pt-6 border-t border-slate-100 dark:border-slate-800 font-black text-xl px-4">
+        <span className="text-slate-400 uppercase text-xs tracking-widest">Total {title}</span>
+        <span className="text-slate-900 dark:text-white">${total.toLocaleString()}</span>
       </div>
     </div>
   );
@@ -170,9 +243,9 @@ function ReportSection({ title, total, children }: any) {
 
 function ReportRow({ label, amount }: any) {
   return (
-    <div className="flex justify-between items-center text-sm">
-      <span className="text-slate-600 dark:text-slate-400 font-medium">{label}</span>
-      <span className="font-bold text-slate-900 dark:text-white">${amount.toLocaleString()}</span>
+    <div className="flex justify-between items-center text-sm group cursor-default">
+      <span className="text-slate-600 dark:text-slate-400 font-bold group-hover:text-emerald-600 transition-colors">{label}</span>
+      <span className="font-black text-slate-900 dark:text-white">${amount.toLocaleString()}</span>
     </div>
   );
 }

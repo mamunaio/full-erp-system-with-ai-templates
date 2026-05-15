@@ -47,7 +47,7 @@ export async function POST(req: Request) {
           email,
           password: hashedPassword,
           tenantId: tenant.id,
-          role: "ADMIN",
+          role: "USER",
         },
       });
 

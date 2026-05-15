@@ -16,12 +16,22 @@ export default function DashboardEventReminder() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Show reminder after 1.5 seconds of entering the dashboard
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 1500);
-    return () => clearTimeout(timer);
+    // Check if user has already dismissed this reminder
+    const hasSeenReminder = localStorage.getItem("eventReminderSeen");
+    
+    if (!hasSeenReminder) {
+      // Show reminder after 1.5 seconds if they haven't seen it
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
   }, []);
+
+  const handleDismiss = () => {
+    setIsOpen(false);
+    localStorage.setItem("eventReminderSeen", "true");
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -74,7 +84,7 @@ export default function DashboardEventReminder() {
 
             <DialogFooter className="mt-10 sm:justify-center">
               <Button 
-                onClick={() => setIsOpen(false)}
+                onClick={handleDismiss}
                 className="w-full bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-2xl h-14 font-black shadow-xl shadow-injaazh-600/20 active:scale-95 transition-all"
               >
                 I'll be there!

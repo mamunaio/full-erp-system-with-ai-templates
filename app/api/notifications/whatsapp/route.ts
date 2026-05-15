@@ -4,8 +4,12 @@ export async function POST(req: Request) {
   try {
     const { to, eventName, date } = await req.json();
 
-    const WHATSAPP_TOKEN = "EAAhbZBSxLDM8BRbeqvUR8QAgBv1EfHCj5y0riU9ZC8xImn95X8ObU1E3C9uXVFMW8qgatwNvKLX2f5eC5HogtHTvI6ffFO0w7ukMONaBQsuZCh1BYIXOApctNvgtkGKxQ4uuRnzPE6BcHI898PQt1DKlroarEZCNd8yXP5lAQAqUOsv5oxMG4g2Q7lsweqEy0yEz0f2hIJjo9qKvXCtwTOpGcpqV9IHLyaZCVSALmUeQt9FFWlCJBTZCaw8OfxOaVOAVewD4GqqrTpKIVmNkFGZASfMRmbgWB92ZAgZDZD";
-    const PHONE_NUMBER_ID = "1092416637294472";
+    const WHATSAPP_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+    const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+      return NextResponse.json({ success: false, error: "WhatsApp API credentials are not configured" }, { status: 500 });
+    }
 
     const response = await fetch(`https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`, {
       method: "POST",
@@ -18,10 +22,25 @@ export async function POST(req: Request) {
         to: to, // Example: "8801715974542"
         type: "template",
         template: {
-          name: "hello_world",
+          name: "event_announcement",
           language: {
             code: "en_US",
           },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                {
+                  type: "text",
+                  text: eventName,
+                },
+                {
+                  type: "text",
+                  text: date,
+                },
+              ],
+            },
+          ],
         },
       }),
     });

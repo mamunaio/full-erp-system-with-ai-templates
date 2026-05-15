@@ -1,121 +1,110 @@
 # Injaazh Enterprise ERP 🚀
+### Tactical Command & Strategic Intelligence System
 
-**Injaazh Enterprise ERP** is a state-of-the-art, AI-powered Enterprise Resource Planning (ERP) solution designed for modern businesses. Built with high-performance technologies, it integrates core business processes into a single, unified platform with intelligent insights provided by Google Gemini AI.
-
----
-
-## 🌟 Key Features
-
-### 🧠 AI Hub
-- **AI Chat**: Interact with your business data using natural language.
-- **AI Insights**: Predictive analytics and automated business recommendations.
-- **Automation Builder**: Create workflows powered by AI to streamline operations.
-
-### 💼 Core Modules
-- **Human Resource Management (HRM)**: Employee lifecycle, payroll, attendance, and leave management.
-- **Customer Relationship Management (CRM)**: Lead tracking, pipeline management, and contact history.
-- **Finance & Accounting**: Chart of accounts, invoicing, payments, and real-time financial reporting (P&L).
-- **Inventory & Warehouse**: Stock tracking, automated reordering, and movement logs.
-- **Project Management**: Task tracking, Gantt charts, and resource allocation.
-- **Manufacturing & SCM**: Bill of Materials (BOM), work orders, and supply chain optimization.
-- **Procurement**: Vendor management and Goods Received Notes (GRN).
+**Injaazh Enterprise ERP** is a state-of-the-art, AI-native Enterprise Resource Planning solution engineered for modern high-performance organizations. Built with a "Steel & Glow" aesthetic, it merges deep operational capability with tactical intelligence powered by **Google Gemini 1.5 Flash**.
 
 ---
 
-## 🛠️ Tech Stack
+## 🌌 The Injaazh Architecture
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Database**: [PostgreSQL](https://www.postgresql.org/) with [Prisma ORM](https://www.prisma.io/)
-- **Authentication**: [Auth.js v5 (NextAuth)](https://authjs.dev/)
-- **API**: [tRPC](https://trpc.io/) for end-to-end typesafety
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Framer Motion](https://www.framer.com/motion/)
-- **AI Engine**: [Google Gemini AI API](https://ai.google.dev/)
-- **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Lucide Icons](https://lucide.dev/)
+Injaazh isn't just an ERP; it's a **Neural Command Center**. Every module is interconnected, sharing live data streams to provide a 360-degree view of your enterprise.
+
+### 🧠 AI Hub & Neural Link
+- **AI Pulse**: Real-time business health monitoring and predictive trajectory analysis.
+- **Cognitive Chat**: Query your entire database using natural language (e.g., *"Show me revenue trends vs attrition for Q2"*).
+- **Automation Engine**: AI-driven workflows that trigger based on organizational events.
+
+### 💼 Integrated Core Modules
+- **HRM (Human Capital Command)**: Employee lifecycle, cinematic dossier management, and automated payroll systems.
+- **CRM (Strategic Pipeline)**: Lead orchestration, visual Kanban sales cycles, and client history pulse.
+- **Inventory (Asset Matrix)**: Real-time stock tracking with automated neural reordering points.
+- **Finance (Master Ledger)**: High-fidelity financial reporting, P&L analytics, and encrypted transaction logs.
+- **AI Hub (Intelligence Center)**: The brain of the operation, coordinating data across all nodes.
 
 ---
 
-## 🚀 Getting Started
+## 🔐 Advanced Security Tier (RBAC)
+
+Injaazh implements a multi-layer security protocol to safeguard enterprise data:
+- **OWNER**: Full system authority, financial oversight, and workspace configuration.
+- **ADMIN**: Operational management, module control, and personnel management.
+- **USER**: Restricted personal workspace (User Hub) focusing on assigned tasks and personal profile logs.
+
+---
+
+## 🛠️ Tactical Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router & Server Components)
+- **Engine**: [TypeScript](https://www.typescriptlang.org/) for mission-critical reliability.
+- **Neural Link**: [Google Gemini 1.5 Flash](https://ai.google.dev/) for high-velocity intelligence.
+- **Master Database**: [MongoDB Atlas](https://www.mongodb.com/) for scalable, high-performance document storage.
+- **ORM**: [Prisma](https://www.prisma.io/) for type-safe database orchestration.
+- **Aesthetic**: [Tailwind CSS](https://tailwindcss.com/) with a custom **Steel & Glow** design system.
+- **Auth Tier**: [Auth.js (NextAuth v5)](https://authjs.dev/) with JWT and session-based protection.
+
+---
+
+## 🚀 Deployment & Operations
 
 ### Prerequisites
-- Node.js 18+ 
-- PostgreSQL database
-- npm or yarn
+- Node.js 18+ (LTS)
+- MongoDB Instance (Atlas recommended)
+- Google AI Studio API Key
 
-### Installation
+### Tactical Setup
 
-1. **Clone the repository**:
+1. **Clone the Command Node**:
    ```bash
    git clone https://github.com/mamunaio/full-phase-erp-software.git
    cd injaazh-erp-software
    ```
 
-2. **Install dependencies**:
+2. **Initialize Dependencies**:
    ```bash
    npm install
    ```
 
-3. **Environment Setup**:
-   Copy `.env.example` to `.env` and fill in your credentials.
+3. **Configure the Neural Env**:
+   Copy `.env.example` to `.env` and initialize your credentials.
    ```bash
    cp .env.example .env
    ```
 
-4. **Database Setup**:
-   Generate Prisma client and push the schema to your database.
+4. **Sync Database Architecture**:
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-5. **Seed the database** (Optional):
-   ```bash
-   npm run seed
-   ```
-
-6. **Run the development server**:
+5. **Engage Development Engine**:
    ```bash
    npm run dev
    ```
-   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ---
 
-## 🔐 Environment Variables
-
-Ensure the following variables are set in your `.env` file:
-
-| Variable | Description |
-| :--- | :--- |
-| `DATABASE_URL` | Your PostgreSQL connection string. |
-| `AUTH_SECRET` | Secret key for Auth.js (generate with `openssl rand -base64 32`). |
-| `NEXTAUTH_URL` | The base URL of your application. |
-| `GEMINI_API_KEY` | Your Google Gemini API key. |
-
----
-
-## 📁 Project Structure
+## 📁 Neural Project Structure
 
 ```text
-├── app/               # Next.js App Router (Pages & API)
-├── components/        # Reusable UI & Layout components
-├── hooks/             # Custom React hooks
-├── lib/               # Shared libraries (Prisma, AI clients, etc.)
-├── prisma/            # Database schema & migrations
-├── store/             # State management (Zustand)
-├── styles/            # Global styles
-├── types/             # TypeScript type definitions
-└── public/            # Static assets
+├── app/               # Tactical Routing & API Nodes
+├── components/        # High-Fidelity UI Matrix
+├── lib/               # Core Logic & Neural Connectors
+├── prisma/            # Database Schema Architecture
+├── store/             # Global State Orchestration (Zustand)
+├── public/            # Static Tactical Assets
+└── middleware.ts      # Security Perimeter & RBAC Enforcement
 ```
 
 ---
 
-## 📝 License
+## 📝 Compliance & Rights
 
-This project is proprietary and confidential. All rights reserved by **Injaazh Enterprise**.
+This project is **Proprietary and Confidential**. All intellectual property rights are reserved by **Injaazh Enterprise Ltd**. Unauthorized duplication or distribution is prohibited.
 
 ---
 
-## 🤝 Support
+## 🤝 Support Operations
 
-For support or inquiries, please contact the development team at [mamunaio@github.com](mailto:mamunaio@github.com).
+For tactical support or strategic inquiries, contact the development fleet at [mamun@injaazh.com](mailto:mamun@injaazh.com).
+
+**Built for the Future. Built by Injaazh.** 🌐

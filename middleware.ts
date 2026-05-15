@@ -31,12 +31,22 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", nextUrl));
   }
 
-  // 3. Multi-tenant Check
-  // If logged in, ensure user belongs to the current subdomain/tenant
-  if (isLoggedIn && !isMainDomain && req.auth?.user && subdomain !== (req.auth.user as any).tenantSlug) {
-    // Unauthorized access to another tenant's subdomain
-    return NextResponse.rewrite(new URL("/403", nextUrl));
+  // 3. Role-Based Access Control (RBAC)
+  if (isLoggedIn && req.auth?.user) {
+    const userRole = (req.auth.user as any).role;
+    const path = nextUrl.pathname;
+
+    // Define Restricted Routes for standard USERS
+    const adminRoutes = ["/hrm", "/crm", "/inventory", "/finance", "/ai-hub", "/ai-pulse", "/super-admin"];
+    const isTryingToAccessAdminRoute = adminRoutes.some(route => path.startsWith(route));
+
+    if (userRole === "USER" && isTryingToAccessAdminRoute) {
+      // Forbidden: Redirect standard user back to dashboard
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    }
   }
+
+  // 4. Multi-tenant Check
 
   return NextResponse.next();
 });
