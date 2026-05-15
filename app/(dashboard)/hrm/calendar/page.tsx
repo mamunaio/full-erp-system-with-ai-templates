@@ -32,10 +32,6 @@ export default function HRCalendarPage() {
   const [isDrafting, setIsDrafting] = useState(false);
   const [draftResult, setDraftResult] = useState<string | null>(null);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // May 2026
-  const [isDrafting, setIsDrafting] = useState(false);
-  const [draftResult, setDraftResult] = useState<string | null>(null);
-  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
   const [isBroadcasting, setIsBroadcasting] = useState(false);
