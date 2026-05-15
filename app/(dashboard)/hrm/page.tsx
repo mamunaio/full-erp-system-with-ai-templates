@@ -12,6 +12,7 @@ import prisma from "@/lib/prisma";
 import HRMStats from "./components/HRMStats";
 import HRMQuickActions from "./components/HRMQuickActions";
 import BirthdaysCard from "./components/BirthdaysCard";
+import DashboardEventReminder from "./components/DashboardEventReminder";
 
 export const metadata: Metadata = {
   title: "HRM Dashboard | Injaazh ERP",
@@ -28,6 +29,7 @@ export default async function HRMPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
+      <DashboardEventReminder />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">

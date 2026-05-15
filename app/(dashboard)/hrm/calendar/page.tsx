@@ -35,7 +35,7 @@ export default function HRCalendarPage() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
   const [localEvents, setLocalEvents] = useState(events);
-  const [newEvent, setNewEvent] = useState({ title: "", date: "", type: "Meeting" });
+  const [newEvent, setNewEvent] = useState({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
 
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
@@ -96,16 +96,19 @@ export default function HRCalendarPage() {
       setLocalEvents(updatedEvents);
     } else {
       setLocalEvents([...localEvents, addedEvent]);
+      if (newEvent.notifyWhatsApp) {
+        alert(`Broadcast started! AI is sending WhatsApp updates to all 15 employees for: ${newEvent.title}`);
+      }
     }
     
     setIsAddEventOpen(false);
     setEditingIndex(null);
-    setNewEvent({ title: "", date: "", type: "Meeting" });
+    setNewEvent({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
   }
 
   function handleDayClick(day: number) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    setNewEvent({ title: "", date: dateStr, type: "Meeting" });
+    setNewEvent({ title: "", date: dateStr, type: "Meeting", notifyWhatsApp: false });
     setEditingIndex(null);
     setIsAddEventOpen(true);
   }
@@ -116,7 +119,8 @@ export default function HRCalendarPage() {
     setNewEvent({ 
       title: event.title, 
       date: dateStr, 
-      type: event.type.charAt(0).toUpperCase() + event.type.slice(1) 
+      type: event.type.charAt(0).toUpperCase() + event.type.slice(1),
+      notifyWhatsApp: false
     });
     setEditingIndex(index);
     setIsAddEventOpen(true);
@@ -146,7 +150,7 @@ export default function HRCalendarPage() {
         </div>
         <Button 
           onClick={() => {
-            setNewEvent({ title: "", date: "", type: "Meeting" });
+            setNewEvent({ title: "", date: "", type: "Meeting", notifyWhatsApp: false });
             setEditingIndex(null);
             setIsAddEventOpen(true);
           }}
@@ -354,6 +358,24 @@ export default function HRCalendarPage() {
                     <option>Celebration</option>
                   </select>
                 </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/30 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.012 2.25c-5.387 0-9.754 4.367-9.754 9.754 0 1.722.447 3.398 1.298 4.874l-1.381 5.045 5.163-1.353c1.42.775 3.018 1.187 4.674 1.187 5.387 0 9.754-4.367 9.754-9.754 0-5.387-4.367-9.754-9.754-9.754zm5.727 13.805c-.242.684-1.21 1.258-1.666 1.332-.445.074-.99.111-2.903-.684-2.45-.99-4.037-3.486-4.156-3.649-.124-.163-.996-1.328-.996-2.531 0-1.203.633-1.796.858-2.043.225-.247.495-.309.658-.309.163 0 .326.002.467.009.15.008.35-.057.548.423.198.48.675 1.644.733 1.761.058.117.098.254.02.411-.078.156-.118.254-.236.39-.118.136-.248.305-.353.409-.118.118-.242.247-.104.485.138.238.614 1.01 1.318 1.636.907.807 1.669 1.055 1.907 1.174.238.118.376.098.514-.06.138-.156.594-.69.753-.926.158-.236.316-.198.534-.117.218.081 1.385.653 1.623.771.238.118.396.176.455.274.059.098.059.566-.183 1.25z"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">Notify via WhatsApp</p>
+                    <p className="text-[10px] text-slate-500">Send automatic updates to all members</p>
+                  </div>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={newEvent.notifyWhatsApp}
+                  onChange={(e) => setNewEvent({...newEvent, notifyWhatsApp: e.target.checked})}
+                  className="w-6 h-6 rounded-lg border-slate-200 text-injaazh-600 focus:ring-injaazh-500 cursor-pointer"
+                />
               </div>
             </div>
             <div className="mt-10 flex space-x-4">
