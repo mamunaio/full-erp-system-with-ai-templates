@@ -52,7 +52,9 @@ export default async function HRMPage() {
         </div>
         <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
           <span className="font-bold text-injaazh-600">HR AI Insight:</span> Total Employees: {totalEmployees}. You have {departmentsCount} departments set up. 
-          <span className="ml-2 text-injaazh-500 cursor-pointer hover:underline">View Talent Analytics →</span>
+          <button className="ml-2 text-injaazh-500 font-bold hover:underline focus:outline-none focus:ring-2 focus:ring-injaazh-500 rounded px-1 transition-all">
+            View Talent Analytics →
+          </button>
         </p>
       </div>
 
@@ -121,13 +123,13 @@ export default async function HRMPage() {
                 <div className="space-y-4">
                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Quick Actions</h4>
                    <div className="grid grid-cols-1 gap-3">
-                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600">
+                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600 hover:bg-injaazh-50 hover:text-injaazh-700 hover:border-injaazh-200 focus:ring-2 focus:ring-injaazh-500 transition-all">
                          <GraduationCap className="w-5 h-5 mr-3 text-injaazh-600" /> Training Programs
                       </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600">
+                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600 hover:bg-injaazh-50 hover:text-injaazh-700 hover:border-injaazh-200 focus:ring-2 focus:ring-injaazh-500 transition-all">
                          <Briefcase className="w-5 h-5 mr-3 text-injaazh-600" /> Active Job Openings
                       </Button>
-                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600">
+                      <Button variant="outline" className="justify-start h-12 rounded-xl text-slate-600 hover:bg-injaazh-50 hover:text-injaazh-700 hover:border-injaazh-200 focus:ring-2 focus:ring-injaazh-500 transition-all">
                          <Users className="w-5 h-5 mr-3 text-injaazh-600" /> Organization Chart
                       </Button>
                    </div>
@@ -162,7 +164,7 @@ export default async function HRMPage() {
                 </div>
               ))}
             </div>
-            <Button className="w-full mt-8 bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-white border-none rounded-xl">
+            <Button className="w-full mt-8 bg-slate-100 hover:bg-injaazh-100 text-slate-900 hover:text-injaazh-700 dark:bg-slate-800 dark:text-white border-none rounded-xl focus:ring-2 focus:ring-injaazh-500 transition-all">
               View Calendar
             </Button>
           </CardContent>
