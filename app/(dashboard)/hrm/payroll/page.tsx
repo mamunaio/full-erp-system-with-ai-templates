@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { Wallet, FileDown, Calculator, CheckCircle2, MoreHorizontal, ArrowRight, ArrowLeft, TrendingUp, TrendingDown, Users, Loader2 } from "lucide-react";
