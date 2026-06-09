@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, FileText, Users, 
   Settings, Box, Sparkles,
-  Command, X, ArrowRight
+  Command, X, ArrowRight, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

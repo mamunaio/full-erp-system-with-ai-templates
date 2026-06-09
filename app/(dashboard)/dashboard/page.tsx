@@ -123,7 +123,7 @@ export default function DashboardPage() {
       {/* Header & Command Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white italic uppercase leading-none">
+          <h1 className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white italic uppercase leading-tight pb-1">
             Business <span className="text-blue-600">Command</span> Center
           </h1>
           <p className="text-slate-500 text-sm font-medium">
@@ -153,7 +153,7 @@ export default function DashboardPage() {
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         <PremiumKPI 
           title="Total Revenue" 
-          value={loading ? "..." : `$${stats?.revenue?.value?.toLocaleString() || '128,400'}`} 
+          value={loading ? "..." : `$${(stats?.revenue?.value ?? 128400).toLocaleString()}`} 
           change="+12.4%" 
           trend="up" 
           icon={Wallet}

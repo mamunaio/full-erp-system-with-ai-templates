@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { 
   LayoutDashboard, Users, HeartHandshake, Package, 
   CircleDollarSign, ShoppingCart, Factory, Kanban, 
@@ -67,7 +68,7 @@ export default function Sidebar() {
       {/* Collapse Toggle */}
       <button 
         onClick={toggleSidebar}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-injaazh-600 transition-all z-50 shadow-lg"
+        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all z-50 shadow-sm"
       >
         {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
@@ -88,30 +89,36 @@ export default function Sidebar() {
               <Link 
                 key={item.label} 
                 href={item.href}
-                className={cn(
-                  "group flex items-center rounded-xl px-3 py-2.5 transition-all relative",
-                  isActive 
-                    ? "bg-injaazh-600/10 text-white font-medium" 
-                    : "hover:bg-slate-900 hover:text-slate-200"
-                )}
+                className="relative block"
               >
-                <item.icon className={cn(
-                  "w-5 h-5 shrink-0 transition-transform group-hover:scale-110",
-                  isActive ? "text-injaazh-500" : "text-slate-500"
-                )} />
-                {!isSidebarCollapsed && (
-                  <span className="ml-3 truncate animate-in fade-in duration-500">
-                    {item.label}
-                  </span>
-                )}
-                {item.premium && !isSidebarCollapsed && (
-                  <div className="ml-auto">
-                    <Sparkles className="w-3 h-3 text-yellow-500" />
-                  </div>
-                )}
                 {isActive && (
-                  <div className="absolute left-0 w-1 h-6 bg-injaazh-500 rounded-r-full shadow-[0_0_8px_rgba(13,142,233,0.8)]" />
+                  <div className="absolute -left-3 top-2 bottom-2 w-1 bg-injaazh-500 rounded-r-full shadow-[0_0_8px_rgba(13,142,233,0.8)] z-10" />
                 )}
+                <motion.div
+                  whileHover={{ x: 6 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  className={cn(
+                    "group flex items-center rounded-xl px-3 py-2.5 transition-all relative",
+                    isActive 
+                      ? "bg-injaazh-600/10 text-white font-medium" 
+                      : "hover:bg-slate-900 hover:text-slate-200"
+                  )}
+                >
+                  <item.icon className={cn(
+                    "w-5 h-5 shrink-0 transition-transform group-hover:scale-110",
+                    isActive ? "text-injaazh-500" : "text-slate-500"
+                  )} />
+                  {!isSidebarCollapsed && (
+                    <span className="ml-3 truncate animate-in fade-in duration-500">
+                      {item.label}
+                    </span>
+                  )}
+                  {item.premium && !isSidebarCollapsed && (
+                    <div className="ml-auto">
+                      <Sparkles className="w-3 h-3 text-yellow-500" />
+                    </div>
+                  )}
+                </motion.div>
               </Link>
             );
           })}

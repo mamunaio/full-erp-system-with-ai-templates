@@ -2,6 +2,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import MobileSidebar from "@/components/layout/MobileSidebar";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import CommandPalette from "@/components/ui/CommandPalette";
+import AICopilotOverlay from "@/components/ui/AICopilotOverlay";
 
 export default function DashboardLayout({
   children,
@@ -30,6 +32,8 @@ export default function DashboardLayout({
           </main>
 
           {/* AI Search Overlay / Shortcut Info could go here */}
+          <CommandPalette />
+          <AICopilotOverlay />
         </div>
       </div>
     </ThemeProvider>

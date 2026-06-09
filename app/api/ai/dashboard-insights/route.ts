@@ -23,7 +23,7 @@ export async function GET() {
         _sum: { amount: true },
       }),
       prisma.product.count({
-        where: { 
+        where: {
           tenantId,
           stocks: { some: { quantity: { lte: prisma.product.fields.minStock } } }
         }
@@ -56,7 +56,7 @@ export async function GET() {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
+
     // Clean JSON response (sometimes Gemini adds ```json ... ```)
     const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
     const insights = JSON.parse(jsonStr);
@@ -64,7 +64,7 @@ export async function GET() {
     return NextResponse.json(insights);
   } catch (error) {
     console.error("AI Insights Error:", error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       insights: [
         { type: "info", text: "Welcome back! AI insights are being generated." },
         { type: "warning", text: "Please check your inventory levels." },
