@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { model } from "@/lib/gemini";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const session = await auth();
@@ -12,7 +14,6 @@ export async function GET() {
 
     const tenantId = session.user.tenantId;
 
-    // 1. Fetch Summary Data from DB
     const [revenue, expenses, lowStock, pendingApprovals] = await Promise.all([
       prisma.transaction.aggregate({
         where: { tenantId, type: "CREDIT" },
@@ -22,10 +23,10 @@ export async function GET() {
         where: { tenantId, type: "DEBIT" },
         _sum: { amount: true },
       }),
-      prisma.product.count({
+      prisma.stock.count({
         where: {
           tenantId,
-          stocks: { some: { quantity: { lte: prisma.product.fields.minStock } } }
+          quantity: { lt: 10 }
         }
       }),
       prisma.leave.count({
@@ -33,7 +34,6 @@ export async function GET() {
       })
     ]);
 
-    // 2. Prepare Prompt for Gemini
     const prompt = `
       You are an AI ERP Consultant for Injaazh ERP. 
       Analyze the following business data for tenant ${session.user.tenantSlug}:
@@ -49,15 +49,12 @@ export async function GET() {
         ]
       }
       Focus on inventory alerts, financial health, or operational bottlenecks.
-      Language: English or Bengali (mix is fine).
     `;
 
-    // 3. Call Gemini API
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
-    // Clean JSON response (sometimes Gemini adds ```json ... ```)
     const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
     const insights = JSON.parse(jsonStr);
 

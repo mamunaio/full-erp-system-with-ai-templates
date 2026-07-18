@@ -5,6 +5,11 @@ import { MASTER_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import prisma from "@/lib/prisma";
 import { subMonths } from "date-fns";
 
+interface HistoricalDataPoint {
+  date: Date;
+  total: number;
+}
+
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -13,9 +18,8 @@ export async function POST(req: Request) {
     const { module, metric } = await req.json();
     const tenantId = session.user.tenantId;
 
-    // 1. Fetch historical data (last 6 months)
     const sixMonthsAgo = subMonths(new Date(), 6);
-    let historicalData = [];
+    let historicalData: HistoricalDataPoint[] = [];
 
     if (module === "finance" && metric === "revenue") {
       historicalData = await prisma.invoice.findMany({
@@ -25,7 +29,6 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Specialized Forecast Prompt
     const forecastPrompt = `
       Analyze the provided historical time-series data and predict the next 3 months.
       Provide the forecast in this JSON structure:
@@ -40,7 +43,6 @@ export async function POST(req: Request) {
 
     const finalSystemPrompt = `${MASTER_SYSTEM_PROMPT}\n\n${forecastPrompt}\n\nHistorical Data: ${JSON.stringify(historicalData)}`;
 
-    // 3. Generate
     const aiResponse = await gemini.generateJSON(`Forecast ${metric} for ${module}.`, finalSystemPrompt);
 
     return NextResponse.json(aiResponse);

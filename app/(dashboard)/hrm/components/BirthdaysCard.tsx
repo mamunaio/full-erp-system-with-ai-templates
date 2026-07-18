@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Cake, Sparkles, Loader2, Send, Copy, Check } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -25,24 +24,22 @@ export default function BirthdaysCard() {
   const [wish, setWish] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-
   const [isSending, setIsSending] = useState(false);
 
   async function generateWish(emp: any) {
     setSelectedEmp(emp);
     setWish("");
     setIsLoading(true);
-
     try {
       const prompt = `Write a professional, warm, and creative birthday wish for ${emp.name}, who works as a ${emp.role} at our company 'Injaazh ERP'. Keep it under 50 words.`;
       const res = await fetch("/api/ai/query", {
         method: "POST",
         body: JSON.stringify({ query: prompt }),
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
       const data = await res.json();
       setWish(data.text || data.response);
-    } catch (err) {
+    } catch {
       setWish("Happy Birthday! Wishing you a great year ahead with Injaazh ERP.");
     } finally {
       setIsLoading(false);
@@ -51,10 +48,8 @@ export default function BirthdaysCard() {
 
   async function handleSend() {
     setIsSending(true);
-    // Simulate API call to send email/notification
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsSending(false);
-    alert(`Birthday wish sent to ${selectedEmp.name}!`);
     setSelectedEmp(null);
   }
 
@@ -66,69 +61,63 @@ export default function BirthdaysCard() {
 
   return (
     <>
-      <Card className="border-none shadow-md bg-white dark:bg-slate-900">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold flex items-center">
-              <Cake className="w-5 h-5 mr-2 text-rose-500" /> Upcoming Birthdays
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {initialBirthdays.map((item, i) => (
-              <div key={i} className="flex items-center space-x-4 group">
-                <div className="w-10 h-10 rounded-full bg-injaazh-50 dark:bg-injaazh-900/30 flex items-center justify-center font-bold text-injaazh-600 border border-injaazh-100 dark:border-injaazh-900/50">
-                  {item.name[0]}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{item.name}</p>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{item.role}</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <p className="text-xs font-bold text-rose-500 mb-1">{item.date}</p>
-                  <button 
-                    onClick={() => generateWish(item)}
-                    className="opacity-0 group-hover:opacity-100 transition-all text-[10px] bg-injaazh-600 text-white px-2 py-1 rounded-md flex items-center hover:bg-injaazh-700"
-                  >
-                    <Sparkles className="w-3 h-3 mr-1" /> Wish
-                  </button>
-                </div>
+      <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-card-foreground font-heading flex items-center">
+            <Cake className="w-4 h-4 mr-2 text-gold-400" /> Upcoming Birthdays
+          </h3>
+        </div>
+        <div className="space-y-4">
+          {initialBirthdays.map((item, i) => (
+            <div key={i} className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-full bg-gold-500/10 flex items-center justify-center font-bold text-gold-400 border border-gold-500/20 shrink-0">
+                {item.name[0]}
               </div>
-            ))}
-          </div>
-          <Link href="/hrm/calendar">
-            <Button className="w-full mt-8 bg-slate-100 hover:bg-injaazh-100 text-slate-900 hover:text-injaazh-700 dark:bg-slate-800 dark:text-white border-none rounded-xl focus:ring-2 focus:ring-injaazh-500 transition-all">
-              View Calendar
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-card-foreground truncate">{item.name}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{item.role}</p>
+              </div>
+              <div className="flex flex-col items-end shrink-0">
+                <p className="text-xs font-bold text-gold-400 mb-1">{item.date}</p>
+                <button
+                  onClick={() => generateWish(item)}
+                  className="opacity-0 group-hover:opacity-100 transition-all text-[10px] bg-gold-500 text-obsidian-900 px-2 py-1 rounded-md flex items-center hover:bg-gold-600 font-bold"
+                >
+                  <Sparkles className="w-3 h-3 mr-1" /> Wish
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <Link href="/hrm/calendar">
+          <Button className="w-full mt-5 bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-500/20 rounded-xl h-10 text-xs font-bold transition-all active:scale-95">
+            View Calendar
+          </Button>
+        </Link>
+      </div>
 
       <Dialog open={!!selectedEmp} onOpenChange={(open) => !open && setSelectedEmp(null)}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none shadow-2xl">
+        <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-2xl border border-border shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center text-xl">
-              <Cake className="w-6 h-6 mr-2 text-rose-500" /> Birthday Wish for {selectedEmp?.name}
+            <DialogTitle className="flex items-center text-xl font-heading">
+              <Cake className="w-6 h-6 mr-2 text-gold-400" /> Birthday Wish for {selectedEmp?.name}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-muted-foreground">
               AI has generated a custom wish for your employee.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-6">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                <Loader2 className="w-10 h-10 animate-spin text-injaazh-600" />
-                <p className="text-sm text-slate-500">Creating a special wish...</p>
+                <Loader2 className="w-10 h-10 animate-spin text-gold-400" />
+                <p className="text-sm text-muted-foreground">Creating a special wish...</p>
               </div>
             ) : (
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-rose-400 to-injaazh-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-                <div className="relative p-6 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl">
-                  <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed">
-                    "{wish}"
-                  </p>
+                <div className="absolute -inset-1 bg-gradient-to-r from-gold-500/20 to-gold-400/20 rounded-2xl blur opacity-30" />
+                <div className="relative p-6 bg-card border border-border rounded-2xl">
+                  <p className="text-card-foreground italic leading-relaxed">&ldquo;{wish}&rdquo;</p>
                 </div>
               </div>
             )}
@@ -138,13 +127,12 @@ export default function BirthdaysCard() {
             <Button
               variant="outline"
               onClick={() => generateWish(selectedEmp)}
-              className="rounded-xl border-slate-200"
+              className="rounded-xl border-border"
               disabled={isLoading || isSending}
             >
-              <Sparkles className="w-4 h-4 mr-2 text-injaazh-600" /> Regenerate
+              <Sparkles className="w-4 h-4 mr-2 text-gold-400" /> Regenerate
             </Button>
-            
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
                 onClick={copyToClipboard}
@@ -155,17 +143,13 @@ export default function BirthdaysCard() {
               </Button>
               <Button
                 onClick={handleSend}
-                className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-xl min-w-[120px]"
+                className="bg-gold-500 hover:bg-gold-600 text-obsidian-900 rounded-xl min-w-[120px] font-bold"
                 disabled={isLoading || isSending || !wish}
               >
                 {isSending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...
-                  </>
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</>
                 ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" /> Send Wish
-                  </>
+                  <><Send className="w-4 h-4 mr-2" /> Send Wish</>
                 )}
               </Button>
             </div>

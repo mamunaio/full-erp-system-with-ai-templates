@@ -1,36 +1,58 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Sparkles, 
-  Download, 
-  Calendar, 
-  BarChart3, 
-  TrendingUp, 
-  PieChart,
-  ArrowLeft,
-  Activity,
-  DollarSign,
-  ShoppingCart,
-  Users,
-  Box,
-  AlertCircle,
-  ChevronRight,
-  MoreVertical,
-  Loader2,
-  FileText
+import { motion } from "framer-motion";
+import {
+  Sparkles, Download, Calendar, BarChart3, TrendingUp, PieChart,
+  Activity, DollarSign, ShoppingCart, Users, Box, AlertCircle,
+  ChevronRight, MoreVertical, Loader2, FileText, ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import AICommandBar from "@/components/dashboard/AICommandBar";
+import SmartAlerts from "@/components/dashboard/SmartAlerts";
+import KPICard from "@/components/dashboard/KPICard";
+import RevenueChart from "@/components/dashboard/RevenueChart";
+import SalesBreakdown from "@/components/dashboard/SalesBreakdown";
+
+const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
+const fadeUp = { hidden: { opacity: 0, y: 24, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
+
+const analyticsSuggestions = [ "Revenue vs expenses", "Growth trends", "Profit margin analysis", "Forecast next quarter" ];
+
+const analyticsAlerts = [
+  { id: "1", severity: "warning" as const, title: "Revenue Growth Slowing", description: "Month-over-month growth rate declined from 12% to 8%.", time: "1h ago" },
+  { id: "2", severity: "info" as const, title: "Profit Margin Healthy", description: "Net profit margin stable at 34.2% — above industry average.", time: "3h ago" },
+  { id: "3", severity: "critical" as const, title: "Expense Spike Detected", description: "Q3 operational expenses 12% above forecast — investigate.", time: "5h ago" },
+  { id: "4", severity: "warning" as const, title: "Inventory Turnover Low", description: "Inventory turnover dropped to 4.2x — below 5x target.", time: "7h ago" },
+  { id: "5", severity: "info" as const, title: "Employee Headcount Up", description: "Workforce grew 8% this quarter — 124 active employees.", time: "9h ago" },
+];
+
+const revenueData = [
+  { month: "Jan", revenue: 85000, expense: 62000 },
+  { month: "Feb", revenue: 92000, expense: 65000 },
+  { month: "Mar", revenue: 88000, expense: 61000 },
+  { month: "Apr", revenue: 102000, expense: 72000 },
+  { month: "May", revenue: 98000, expense: 69000 },
+  { month: "Jun", revenue: 115000, expense: 78000 },
+];
+
+const categoryData = [
+  { name: "SaaS Software", value: 450 },
+  { name: "Digital Services", value: 300 },
+  { name: "Hard Hardware", value: 250 },
+];
+
 export default function AnalyticsOverview() {
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleExport = () => {
@@ -43,253 +65,160 @@ export default function AnalyticsOverview() {
     }, 2000);
   };
 
-  if (!mounted) return null;
-
-  return (
-    <div className="space-y-10 animate-in fade-in duration-700 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <Link href="/dashboard" className="group flex items-center text-[10px] font-black text-slate-400 hover:text-blue-600 transition-all mb-4 bg-white dark:bg-slate-900 px-4 py-2 rounded-2xl w-fit shadow-sm border border-slate-100 dark:border-slate-800 uppercase tracking-[0.2em]">
-            <ArrowLeft className="w-3 h-3 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Back to App Dashboard
-          </Link>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            Business <span className="text-blue-600">Intelligence</span>
-          </h1>
-          <p className="text-slate-500 text-sm font-medium">
-            Centralized data insights across all Injaazh ERP modules.
-          </p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" className="rounded-2xl h-12 px-6 border-slate-200 dark:border-slate-800 font-bold bg-white dark:bg-slate-900 shadow-sm active:scale-95 transition-all">
-            <Calendar className="w-4 h-4 mr-3 text-slate-400" /> This Month
-          </Button>
-          <Button 
-            onClick={handleExport}
-            disabled={isExporting}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-12 px-8 font-black shadow-xl shadow-blue-600/20 active:scale-95 transition-all"
-          >
-            {isExporting ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> EXPORTING...</>
-            ) : (
-              <><Download className="w-4 h-4 mr-3" /> Export Global Report</>
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* AI Highlights Banner */}
-      <div className="bg-slate-950 rounded-[48px] p-12 text-white shadow-2xl relative overflow-hidden group border border-blue-500/10">
-        <div className="relative z-10 grid md:grid-cols-3 gap-16 items-center">
-           <div className="md:col-span-2 space-y-8">
-              <div className="flex items-center space-x-3 text-blue-400 font-black uppercase tracking-[0.3em] text-xs">
-                 <Sparkles className="w-5 h-5" /> AI Executive Summary
-              </div>
-              <h2 className="text-5xl font-black italic tracking-tighter uppercase leading-none">
-                 Performance is <span className="text-blue-500 underline decoration-blue-500/20">Excellent</span> This Quarter
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="flex items-start space-x-5 group/item">
-                    <div className="w-1.5 h-10 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)] transition-all group-hover/item:h-12" />
-                    <p className="text-sm text-slate-400 font-medium leading-relaxed">Revenue is up <span className="text-white font-black tracking-tight underline decoration-blue-500/40">+18.5%</span> month-over-month, primarily driven by the Meta Corp project delivery.</p>
-                 </div>
-                 <div className="flex items-start space-x-5 group/item">
-                    <div className="w-1.5 h-10 rounded-full bg-emerald-600 transition-all group-hover/item:h-12" />
-                    <p className="text-sm text-slate-400 font-medium leading-relaxed">Profit margin has stabilized at <span className="text-white font-black tracking-tight">34.2%</span>, despite a subtle increase in operational expenses.</p>
-                 </div>
-              </div>
-           </div>
-           <div className="bg-white/5 backdrop-blur-3xl rounded-[40px] p-10 border border-white/10 text-center space-y-4 shadow-inner relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl" />
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] relative z-10">Global Health Score</p>
-              <div className="text-8xl font-black italic tracking-tighter text-blue-500 drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] relative z-10">92</div>
-              <Button variant="ghost" className="text-[10px] font-black text-blue-400 hover:text-white transition-all uppercase tracking-widest relative z-10">Generate Narrative Report →</Button>
-           </div>
-        </div>
-        <div className="absolute left-[-10%] bottom-[-20%] w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
-      </div>
-
-      {/* KPI Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <KPICard label="Total Revenue" value="$124,500" change="+12.5%" icon={DollarSign} color="text-blue-600" bg="bg-blue-50 dark:bg-blue-900/20" />
-        <KPICard label="Net Profit" value="$42,080" change="+8.2%" icon={Activity} color="text-emerald-600" bg="bg-emerald-50 dark:bg-emerald-900/20" />
-        <KPICard label="Profit Margin" value="33.8%" change="-1.2%" icon={TrendingUp} color="text-indigo-600" bg="bg-indigo-50 dark:bg-indigo-900/20" />
-        <KPICard label="Total Orders" value="842" change="+18%" icon={ShoppingCart} color="text-violet-600" bg="bg-violet-50 dark:bg-violet-900/20" />
-        <KPICard label="Avg Order Value" value="$147.50" change="+5%" icon={DollarSign} color="text-sky-600" bg="bg-sky-50 dark:bg-sky-900/20" />
-        <KPICard label="Active Employees" value="124" change="+2" icon={Users} color="text-cyan-600" bg="bg-cyan-50 dark:bg-cyan-900/20" />
-        <KPICard label="Inventory Value" value="$856,400" change="+4.5%" icon={Box} color="text-amber-600" bg="bg-amber-50 dark:bg-amber-900/20" />
-        <KPICard label="Low Stock Items" value="12" change="+5" icon={AlertCircle} color="text-rose-600" bg="bg-rose-50 dark:bg-rose-900/20" isNegative={true} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Revenue vs Expenses Chart */}
-        <div className="bg-white dark:bg-slate-900 rounded-[48px] border border-slate-200 dark:border-slate-800 p-10 shadow-sm group">
-           <div className="flex items-center justify-between mb-12">
-              <div>
-                 <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white italic uppercase">Revenue vs Expenses</h3>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Financial Trend (Last 6 Months)</p>
-              </div>
-              <div className="flex items-center space-x-6">
-                 <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-blue-600" /><span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Revenue</span></div>
-                 <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-800" /><span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Expenses</span></div>
-              </div>
-           </div>
-           <div className="h-[300px] flex items-end justify-between px-4 pb-6 border-b border-slate-50 dark:border-slate-800">
-              {[45, 65, 50, 85, 60, 95].map((h, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center group/bar max-w-[80px]">
-                   <div className="w-full flex space-x-1.5 justify-center items-end h-[220px]">
-                      <div className="w-4 bg-blue-600 rounded-t-xl transition-all duration-1000 group-hover/bar:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" style={{ height: `${h}%` }} />
-                      <div className="w-4 bg-slate-100 dark:bg-slate-800 rounded-t-xl transition-all duration-1000" style={{ height: `${h * 0.6}%` }} />
-                   </div>
-                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-4">Mon {i+1}</span>
-                </div>
-              ))}
-           </div>
-           <Button variant="ghost" className="w-full mt-6 text-[10px] font-black text-blue-600 uppercase tracking-widest">View Detailed Ledger <ChevronRight className="w-3 h-3 ml-2" /></Button>
-        </div>
-
-        {/* Sales by Category */}
-        <div className="bg-white dark:bg-slate-900 rounded-[48px] border border-slate-200 dark:border-slate-800 p-10 shadow-sm relative overflow-hidden">
-           <div className="flex justify-between items-start mb-12">
-              <div>
-                 <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white italic uppercase">Sales by Category</h3>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Market Share Distribution</p>
-              </div>
-              <Button variant="ghost" size="icon" className="rounded-full"><MoreVertical className="w-5 h-5 text-slate-300" /></Button>
-           </div>
-           <div className="flex flex-col md:flex-row items-center justify-around gap-12 pt-4">
-              <div className="relative">
-                 <div className="w-48 h-48 rounded-full border-[24px] border-slate-50 dark:border-slate-800 flex items-center justify-center">
-                    <div className="text-center">
-                       <p className="text-4xl font-black italic tracking-tighter">100%</p>
-                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Market</p>
-                    </div>
-                 </div>
-                 <svg className="absolute inset-0 w-48 h-48 -rotate-90">
-                    <circle cx="96" cy="96" r="72" fill="transparent" stroke="currentColor" strokeWidth="24" strokeDasharray="452" strokeDashoffset="120" className="text-blue-600 drop-shadow-[0_0_10px_rgba(37,99,235,0.3)]" strokeLinecap="round" />
-                 </svg>
-              </div>
-              <div className="space-y-6">
-                 <LegendItem color="bg-blue-600" label="SaaS Software" value="45%" sub="+$12k growth" />
-                 <LegendItem color="bg-sky-400" label="Digital Services" value="30%" sub="+8% increase" />
-                 <LegendItem color="bg-emerald-400" label="Hard Hardware" value="25%" sub="Stable yield" />
-              </div>
-           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-         {/* Headcount Trend */}
-         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[48px] border border-slate-200 dark:border-slate-800 p-10 shadow-sm relative group overflow-hidden">
-            <div className="flex items-center justify-between mb-12">
-               <div>
-                  <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white italic uppercase">Headcount Trend</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Workforce Expansion Index</p>
-               </div>
-               <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2"><div className="w-2 h-2 rounded-full bg-blue-600" /><span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active</span></div>
-               </div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-xl border-2 border-gold-500/20" />
+            <div className="absolute inset-0 rounded-xl border-2 border-transparent border-t-gold-500 animate-spin" />
+            <div className="absolute inset-1 rounded-lg bg-gold-500/10 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-gold-400 animate-pulse" />
             </div>
-            <div className="h-[250px] w-full p-4 relative">
-               <svg className="w-full h-full overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#2563eb" stopOpacity="0.2" />
-                      <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M 0 35 Q 25 30, 50 15 T 100 5 L 100 40 L 0 40 Z" fill="url(#areaGrad)" />
-                  <path d="M 0 35 Q 25 30, 50 15 T 100 5" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round" className="animate-draw" />
-                  {/* Highlight dots */}
-                  <circle cx="50" cy="15" r="2.5" fill="#2563eb" className="animate-pulse" />
-                  <circle cx="100" cy="5" r="2.5" fill="#2563eb" />
-               </svg>
-            </div>
-            <div className="flex justify-between px-4 mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-               <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span>
-            </div>
-         </div>
-
-         {/* Insights & Actions */}
-         <div className="bg-slate-50 dark:bg-slate-950 rounded-[48px] border border-slate-100 dark:border-slate-900 p-10 shadow-inner flex flex-col justify-between">
-            <div className="space-y-8">
-               <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-black tracking-tight italic uppercase">Key Insights</h3>
-                  <FileText className="w-5 h-5 text-blue-600" />
-               </div>
-               <div className="space-y-8">
-                  <InsightRow title="Inventory Turnover" value="5.2x" status="Healthy" color="emerald" trend="+0.4" />
-                  <InsightRow title="Attrition Rate" value="4.1%" status="Warning" color="amber" trend="+0.8" isWarning />
-                  <InsightRow title="Customer Acquisition" value="$125.00" status="Excellent" color="blue" trend="-$12" isPositive />
-               </div>
-            </div>
-            <Button className="w-full mt-10 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-[24px] h-16 font-black italic uppercase tracking-tighter hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800">
-               Analyze Full Dataset
-            </Button>
-         </div>
-      </div>
-    </div>
-  );
-}
-
-function KPICard({ label, value, change, icon: Icon, color, bg, isNegative }: any) {
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-200 dark:border-slate-800 p-8 shadow-sm group hover:shadow-2xl transition-all duration-500 cursor-pointer relative overflow-hidden">
-      <div className="flex items-center justify-between mb-8">
-        <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500", bg)}>
-          <Icon className={cn("w-7 h-7", color)} />
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-          <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter italic uppercase">{value}</p>
-        </div>
-      </div>
-      <div className="flex items-center justify-between">
-         <div className={cn("flex items-center text-[10px] font-black px-2.5 py-1 rounded-full", 
-           isNegative ? "text-rose-600 bg-rose-50" : "text-emerald-600 bg-emerald-50"
-         )}>
-            {change}
-         </div>
-         <div className="w-20 h-1.5 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div className={cn("h-full rounded-full", color.replace("text-", "bg-"))} style={{ width: '70%' }} />
-         </div>
-      </div>
-    </div>
-  );
-}
-
-function LegendItem({ color, label, value, sub }: any) {
-  return (
-    <div className="flex items-center space-x-4 group cursor-pointer">
-       <div className={cn("w-4 h-4 rounded-full shadow-lg", color)} />
-       <div>
-          <div className="flex items-center space-x-2">
-             <span className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tight">{label}</span>
-             <span className="text-sm font-black text-blue-600">{value}</span>
           </div>
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{sub}</p>
-       </div>
-    </div>
+          <span className="text-sm text-muted-foreground font-medium">Loading Analytics...</span>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-8 max-w-[1600px] mx-auto">
+      <motion.div variants={fadeUp}>
+        <div className="bg-card/40 backdrop-blur-2xl rounded-2xl border border-border p-6 md:p-8 relative overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gold-500/5 blur-[80px] pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-gold-500/5 blur-[60px] pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Analytics Online</span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight font-heading">
+                Business <span className="text-gold-400">Intelligence</span>
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                Centralized data insights across all Injaazh ERP modules.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button variant="outline" className="rounded-[20px] h-12 px-6 border-border bg-card/60 font-bold">
+                <Calendar className="w-4 h-4 mr-3" /> This Month
+              </Button>
+              <Button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="bg-gold-500 hover:bg-gold-600 text-obsidian-900 rounded-[20px] h-12 px-8 shadow-lg shadow-gold-500/20 font-bold uppercase tracking-tight transition-all active:scale-95"
+              >
+                {isExporting ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> EXPORTING...</>
+                ) : (
+                  <><Download className="w-4 h-4 mr-3" /> Export Global Report</>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <AICommandBar suggestions={analyticsSuggestions} />
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <div className="bg-obsidian-900 rounded-2xl p-8 text-white relative overflow-hidden border border-gold-500/20">
+          <div className="relative z-10 flex items-start gap-8">
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-2 text-gold-400 font-bold uppercase tracking-[0.2em] text-xs">
+                <Sparkles className="w-4 h-4" /> AI Executive Summary
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight">
+                Performance is <span className="text-gold-400">Excellent</span> This Quarter
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-8 rounded-full bg-gold-500" />
+                  <p className="text-sm text-muted-foreground">Revenue is up <span className="text-white font-bold">+18.5%</span> month-over-month, driven by Meta Corp project delivery.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-8 rounded-full bg-emerald-500" />
+                  <p className="text-sm text-muted-foreground">Profit margin stabilized at <span className="text-white font-bold">34.2%</span> despite increase in operational expenses.</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 text-center border border-white/10 min-w-[160px]">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Health Score</p>
+              <p className="text-5xl font-bold text-gold-400 mt-2">92</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <KPICard title="Total Revenue" value="$124,500" change="+12.5%" trend="up" icon={DollarSign} sparkline={[85, 92, 88, 102, 98, 115, 124]} />
+          <KPICard title="Net Profit" value="$42,080" change="+8.2%" trend="up" icon={Activity} sparkline={[30, 34, 32, 38, 36, 40, 42]} />
+          <KPICard title="Profit Margin" value="33.8%" change="-1.2%" trend="down" icon={TrendingUp} sparkline={[35, 34.5, 34, 34.2, 34, 33.8, 33.8]} />
+          <KPICard title="Total Orders" value="842" change="+18%" trend="up" icon={ShoppingCart} sparkline={[580, 620, 680, 720, 780, 810, 842]} />
+        </div>
+      </motion.div>
+
+      <motion.div variants={fadeUp}>
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 [&>*]:break-inside-avoid [&>*]:mb-4">
+          <div className="lg:col-span-1">
+            <RevenueChart data={revenueData} />
+          </div>
+          <div>
+            <SalesBreakdown data={categoryData} />
+          </div>
+          <div className="space-y-4">
+            <SmartAlerts data={analyticsAlerts} />
+
+            <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
+              <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Key Insights</h3>
+              <div className="space-y-4">
+                <InsightRow title="Inventory Turnover" value="5.2x" status="Healthy" />
+                <InsightRow title="Attrition Rate" value="4.1%" status="Warning" />
+                <InsightRow title="Customer Acquisition" value="$125.00" status="Excellent" />
+              </div>
+            </div>
+
+            <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
+              <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Headcount Trend</h3>
+              <div className="flex items-end justify-between h-24 gap-1 mb-2">
+                {[60, 65, 58, 72, 80, 75].map((h, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <div className="w-full bg-gold-500/70 rounded-t" style={{ height: `${h}%` }} />
+                    <span className="text-[8px] text-muted-foreground">M{i+1}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  <span className="font-semibold">Jan</span>
+                  <span className="font-bold text-gold-400">124 Active</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
-function InsightRow({ title, value, status, color, trend, isWarning, isPositive }: any) {
+function InsightRow({ title, value, status }: any) {
+  const statusColor = status === "Healthy" || status === "Excellent" ? "text-emerald-400 bg-emerald-500/15" :
+    status === "Warning" ? "text-amber-400 bg-amber-500/15" : "text-blue-400 bg-blue-500/15";
   return (
-    <div className="space-y-2 group">
-       <div className="flex justify-between items-center">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
-          <span className={cn(
-             "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border",
-             color === "emerald" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-             color === "amber" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-blue-50 text-blue-600 border-blue-100"
-          )}>{status}</span>
-       </div>
-       <div className="flex items-end justify-between">
-          <p className="text-3xl font-black italic tracking-tighter uppercase leading-none">{value}</p>
-          <span className={cn("text-[9px] font-black", isWarning ? "text-rose-500" : isPositive ? "text-emerald-500" : "text-slate-400")}>
-            {trend} trend
-          </span>
-       </div>
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{title}</p>
+        <p className="text-xl font-bold text-card-foreground">{value}</p>
+      </div>
+      <span className={cn("text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full", statusColor)}>{status}</span>
     </div>
   );
 }

@@ -3,8 +3,8 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Check DB connection
-    await prisma.$queryRaw`SELECT 1`;
+    // Check DB connection using MongoDB ping command
+    await prisma.$runCommandRaw({ ping: 1 });
 
     return NextResponse.json({
       status: "healthy",

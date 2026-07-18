@@ -2,18 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { Sparkles, Send, Loader2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
-const suggestions = [
-  "Show me this month's revenue",
-  "Which employees are on leave today?",
-  "Top 5 selling products"
+const defaultSuggestions = [
+  "Revenue analysis",
+  "Anomaly detection",
+  "Top opportunities",
+  "Forecast next quarter",
+  "Inventory status",
 ];
 
-export default function AICommandBar() {
+interface AICommandBarProps {
+  suggestions?: string[];
+}
+
+export default function AICommandBar({ suggestions: customSuggestions }: AICommandBarProps) {
+  const suggestions = customSuggestions ?? defaultSuggestions;
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   async function handleAsk() {
     if (!query.trim()) return;
@@ -24,89 +32,92 @@ export default function AICommandBar() {
       const res = await fetch("/api/ai/query", {
         method: "POST",
         body: JSON.stringify({ query }),
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
       const data = await res.json();
-      
-      if (data.error) {
-        setResponse(`Error: ${data.error}`);
-      } else {
-        // Handle both 'text' and 'response' fields for compatibility
-        setResponse(data.text || data.response);
-      }
-    } catch (err) {
-      setResponse("I'm sorry, I couldn't process that query right now.");
+      setResponse(data.text || data.response || data.error || "No response available.");
+    } catch {
+      setResponse("Could not process that query right now.");
     } finally {
       setIsLoading(false);
     }
   }
 
-
   useEffect(() => {
     if (response) {
-      const timer = setTimeout(() => {
-        setResponse(null);
-      }, 15000); // Auto-dismiss after 15 seconds
+      const timer = setTimeout(() => setResponse(null), 15000);
       return () => clearTimeout(timer);
     }
   }, [response]);
 
   return (
-    <div className="space-y-4 mb-10">
-      <div className="relative group">
-        <div className="absolute inset-0 bg-gradient-to-r from-injaazh-500 to-blue-600 rounded-2xl blur-lg opacity-10 group-focus-within:opacity-20 transition-opacity" />
-        <div className="relative flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 pl-6 shadow-xl transition-all">
-          <Sparkles className="w-5 h-5 text-injaazh-500 mr-4" />
-          <input 
-            type="text" 
+    <div className="space-y-4">
+      <div className="relative">
+        <div className={`absolute -inset-1 rounded-2xl bg-gradient-to-r from-gold-500/10 via-gold-400/10 to-gold-500/10 blur-lg transition-opacity duration-500 pointer-events-none ${isFocused ? "opacity-100" : "opacity-0"}`} />
+
+        <div className={`relative flex items-center bg-card/40 backdrop-blur-2xl rounded-2xl border p-2 pl-4 transition-all duration-300 shadow-[0_0_30px_rgba(201,149,46,0.1)] ${isFocused ? "border-gold-500/40 shadow-[0_0_20px_rgba(201,149,46,0.15)]" : "border-gold-500/20"}`}>
+          <Sparkles className="w-5 h-5 text-gold-400 shrink-0 gold-sparkle" />
+          <input
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAsk()}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder="Ask AI anything about your business..."
-            className="flex-1 bg-transparent border-none outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium"
+            className="flex-1 bg-transparent border-none outline-none text-lg text-foreground placeholder:text-muted-foreground/50 px-4 py-3 font-medium"
           />
-          <Button 
+          <button
             onClick={handleAsk}
             disabled={isLoading || !query.trim()}
-            className="rounded-xl bg-injaazh-600 hover:bg-injaazh-700 h-10 w-10 p-0"
+            className="w-10 h-10 rounded-xl bg-gold-500 hover:bg-gold-600 text-obsidian-900 flex items-center justify-center shrink-0 shadow-lg shadow-gold-500/25 transition-all duration-200 disabled:opacity-50 disabled:shadow-none active:scale-95"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </Button>
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {suggestions.map((s) => (
-          <button
+      <div className="flex gap-2 overflow-x-auto scrollbar-thin px-1">
+        {suggestions.map((s, i) => (
+          <motion.button
             key={s}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.05 }}
             onClick={() => setQuery(s)}
-            className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-injaazh-500 hover:text-injaazh-600 transition-all text-slate-500"
+            className="whitespace-nowrap text-xs px-3 py-1.5 rounded-full border border-gold-500/20 text-gold-400 hover:bg-gold-500/10 transition-all duration-200 font-medium"
           >
             {s}
-          </button>
+          </motion.button>
         ))}
       </div>
 
-      {response && (
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-injaazh-100 dark:border-injaazh-900/50 shadow-lg animate-in fade-in slide-in-from-top-4">
-          <div className="flex items-start space-x-4">
-            <div className="w-8 h-8 rounded-full bg-injaazh-100 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 text-injaazh-600" />
+      <AnimatePresence>
+        {response && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="relative overflow-hidden rounded-xl bg-card/40 backdrop-blur-xl border border-gold-500/20 p-5"
+          >
+            <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-gold-500/10 blur-[40px] pointer-events-none" />
+
+            <div className="relative z-10 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gold-500/20 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-gold-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] text-gold-400 uppercase tracking-widest font-bold mb-1.5">AI Response</p>
+                <p className="text-sm text-card-foreground leading-relaxed font-medium">{response}</p>
+              </div>
+              <button onClick={() => setResponse(null)} className="text-muted-foreground hover:text-foreground transition-colors shrink-0 p-1 rounded-lg hover:bg-card/50">
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <div className="flex-1 prose prose-sm dark:prose-invert">
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                {response}
-              </p>
-            </div>
-            <button 
-              onClick={() => setResponse(null)}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-slate-400" />
-            </button>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

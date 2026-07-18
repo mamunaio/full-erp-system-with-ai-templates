@@ -1,6 +1,11 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.warn("[GEMINI] GEMINI_API_KEY is not set. AI features will not work.");
+}
+
+const genAI = new GoogleGenerativeAI(apiKey || "");
 
 export class GeminiClient {
   private model: any;
@@ -19,6 +24,10 @@ export class GeminiClient {
   }
 
   async generateJSON(prompt: string, systemPrompt: string) {
+    if (!apiKey) {
+      return { text: "AI service is not configured.", type: "text", severity: "warning" };
+    }
+
     try {
       const result = await this.model.generateContent({
         contents: [
@@ -29,7 +38,6 @@ export class GeminiClient {
       const text = response.text();
       
       try {
-        // Clean the response in case it has markdown blocks
         const cleaned = text.replace(/```json\n?|```/g, "").trim();
         return JSON.parse(cleaned);
       } catch (e) {
@@ -47,6 +55,10 @@ export class GeminiClient {
   }
 
   async generateText(prompt: string, systemPrompt: string) {
+    if (!apiKey) {
+      return "AI service is not configured.";
+    }
+
     try {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
       const result = await model.generateContent({

@@ -1,4 +1,4 @@
-export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'STAFF';
+export type UserRole = 'SUPER_ADMIN' | 'OWNER' | 'ADMIN' | 'MANAGER' | 'USER';
 
 export type ModuleName = 
   | 'dashboard'
@@ -36,14 +36,10 @@ declare module "next-auth" {
   interface Session {
     user: AuthUser;
   }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    role: UserRole;
-    tenantId: string;
-    tenantSlug: string;
-    permissions: Permission[];
+  interface User {
+    role?: UserRole;
+    tenantId?: string;
+    tenantSlug?: string;
+    permissions?: Permission[];
   }
 }

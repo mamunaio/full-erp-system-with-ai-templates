@@ -10,8 +10,8 @@ export async function GET(req: Request) {
     const projects = await prisma.project.findMany({
       where: { tenantId: session.user.tenantId },
       include: {
-        contact: { select: { name: true, company: true } },
         tasks: { select: { id: true, status: true } },
+        milestones: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -32,22 +32,22 @@ export async function POST(req: Request) {
       data: {
         tenantId: session.user.tenantId,
         name: body.name,
-        description: body.description,
-        contactId: body.contactId,
+        client: body.client,
         startDate: new Date(body.startDate),
-        endDate: new Date(body.endDate),
+        endDate: body.endDate ? new Date(body.endDate) : null,
         budget: body.budget,
-        status: body.status || "PLANNING",
-        priority: body.priority || "MEDIUM",
+        status: body.status || "NOT_STARTED",
         milestones: {
           create: body.milestones?.map((m: any) => ({
-            tenantId: session.user.tenantId,
             title: m.title,
             dueDate: new Date(m.dueDate),
-            description: m.description
-          }))
+          })) || []
         }
       },
+      include: {
+        milestones: true,
+        tasks: true,
+      }
     });
 
     return NextResponse.json(project);

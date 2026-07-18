@@ -1,10 +1,9 @@
 "use client";
 
-import { 
-  Phone, Mail, Users, FileText, 
-  CheckCircle2, Clock, MoreVertical 
+import {
+  Phone, Mail, Users, FileText,
+  CheckCircle2, Clock
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const activities = [
   { id: 1, type: "CALL", subject: "Initial discovery call", contact: "Alex Rivera", date: "Today, 10:30 AM", status: "DONE" },
@@ -13,7 +12,7 @@ const activities = [
   { id: 4, type: "NOTE", subject: "Follow up next week about budget", contact: "Bruce Wayne", date: "May 12, 2026", status: "DONE" },
 ];
 
-const icons = {
+const icons: Record<string, React.ReactNode> = {
   CALL: <Phone className="w-4 h-4" />,
   EMAIL: <Mail className="w-4 h-4" />,
   MEETING: <Users className="w-4 h-4" />,
@@ -22,48 +21,46 @@ const icons = {
 
 export default function ActivityTimeline() {
   return (
-    <div className="space-y-6">
-      {activities.map((activity, index) => (
-        <div key={activity.id} className="relative pl-10">
-          {/* Vertical Line */}
-          {index < activities.length - 1 && (
-            <div className="absolute left-[19px] top-10 bottom-[-24px] w-0.5 bg-slate-100 dark:bg-slate-800" />
-          )}
-          
-          {/* Icon Circle */}
-          <div className={cn(
-            "absolute left-0 top-1 w-10 h-10 rounded-full border-4 border-white dark:border-slate-900 flex items-center justify-center shadow-sm",
-            activity.status === "DONE" ? "bg-emerald-100 text-emerald-600" : "bg-blue-100 text-blue-600"
-          )}>
-            {(icons as any)[activity.type]}
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-4 shadow-sm hover:shadow-md transition-all">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{activity.type}</span>
-              <span className="text-[10px] text-slate-400 font-medium">{activity.date}</span>
+    <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
+      <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Activity Timeline</h3>
+      <div className="space-y-4">
+        {activities.map((activity, index) => (
+          <div key={activity.id} className="relative pl-10">
+            {index < activities.length - 1 && (
+              <div className="absolute left-[19px] top-10 bottom-[-16px] w-0.5 bg-border" />
+            )}
+            <div className={`absolute left-0 top-1 w-10 h-10 rounded-full border-2 border-card flex items-center justify-center shadow-sm ${
+              activity.status === "DONE" ? "bg-emerald-500/15 text-emerald-400" : "bg-gold-500/15 text-gold-400"
+            }`}>
+              {icons[activity.type]}
             </div>
-            <h4 className="font-bold text-slate-900 dark:text-white">{activity.subject}</h4>
-            <div className="flex items-center justify-between mt-3">
-              <div className="flex items-center text-xs text-slate-500">
-                <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-bold mr-2">
-                  {activity.contact[0]}
-                </div>
-                {activity.contact}
+            <div className="bg-card/40 backdrop-blur-xl rounded-xl border border-border p-4 hover:border-gold-500/10 transition-all">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{activity.type}</span>
+                <span className="text-[10px] text-muted-foreground font-medium">{activity.date}</span>
               </div>
-              {activity.status === "TODO" ? (
-                <div className="flex items-center text-xs font-bold text-blue-600">
-                  <Clock className="w-3 h-3 mr-1" /> Upcoming
+              <h4 className="font-bold text-card-foreground text-sm">{activity.subject}</h4>
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <div className="w-5 h-5 rounded-full bg-gold-500/20 flex items-center justify-center text-[8px] font-bold text-gold-400 mr-2">
+                    {activity.contact[0]}
+                  </div>
+                  {activity.contact}
                 </div>
-              ) : (
-                <div className="flex items-center text-xs font-bold text-emerald-600">
-                  <CheckCircle2 className="w-3 h-3 mr-1" /> Completed
-                </div>
-              )}
+                {activity.status === "TODO" ? (
+                  <div className="flex items-center text-xs font-bold text-gold-400">
+                    <Clock className="w-3 h-3 mr-1" /> Upcoming
+                  </div>
+                ) : (
+                  <div className="flex items-center text-xs font-bold text-emerald-400">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Completed
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

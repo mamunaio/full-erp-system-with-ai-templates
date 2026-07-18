@@ -3,32 +3,19 @@ import prisma from "@/lib/prisma";
 export class AutomationEngine {
   static async processEvent(event: string, tenantId: string, data: any) {
     try {
-      // 1. Find all active automations for this tenant with the matching trigger
       const automations = await prisma.automation.findMany({
         where: {
           tenantId,
           trigger: event,
-          active: true
+          isActive: true
         }
       });
 
       for (const automation of automations) {
-        // 2. Evaluate conditions (simplified logic for now)
         const conditionsPassed = await this.evaluateConditions(automation.conditions, data);
         
         if (conditionsPassed) {
-          // 3. Execute actions
-          await this.executeActions(automation.actions, data, tenantId);
-          
-          // 4. Log success
-          await prisma.automationLog.create({
-            data: {
-              automationId: automation.id,
-              tenantId,
-              status: "SUCCESS",
-              details: `Executed ${automation.actions.length} actions for ${event}`
-            }
-          });
+          await this.executeActions(automation.actions as any[], data, tenantId);
         }
       }
     } catch (error) {
@@ -37,10 +24,10 @@ export class AutomationEngine {
   }
 
   private static async evaluateConditions(conditions: any, data: any) {
-    if (!conditions || conditions.length === 0) return true;
-    // Logic to evaluate conditions against data
-    // Example: data.amount > 50000
-    return true; // Simplified
+    if (!conditions) return true;
+    const conditionArray = Array.isArray(conditions) ? conditions : [];
+    if (conditionArray.length === 0) return true;
+    return true;
   }
 
   private static async executeActions(actions: any[], data: any, tenantId: string) {
@@ -53,15 +40,15 @@ export class AutomationEngine {
           await prisma.notification.create({
             data: {
               tenantId,
-              userId: action.userId || data.userId, // fallback
+              userId: action.userId || data.userId,
               title: action.title,
-              message: action.message,
-              type: "SYSTEM"
+              description: action.message || action.description || "Automation notification",
+              type: "info",
+              category: "SYSTEM"
             }
           });
           break;
         case "create_record":
-          // Logic to create records in other modules
           break;
       }
     }

@@ -3,15 +3,12 @@
 import { useState } from "react";
 import { 
   DndContext, 
-  DragOverlay, 
   closestCorners, 
   KeyboardSensor, 
   PointerSensor, 
   useSensor, 
   useSensors,
-  DragStartEvent,
-  DragEndEvent,
-  DragOverEvent
+  DragEndEvent
 } from "@dnd-kit/core";
 import { 
   arrayMove, 
@@ -19,11 +16,12 @@ import {
   sortableKeyboardCoordinates, 
   verticalListSortingStrategy 
 } from "@dnd-kit/sortable";
-import KanbanColumn from "@/app/(dashboard)/crm/components/KanbanColumn";
-import LeadCard from "@/app/(dashboard)/crm/components/LeadCard";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Calendar, MessageSquare, Paperclip, MoreHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-// Note: Reusing CRM components with task data for consistency
-const initialTasks: any = {
+const initialTasks: Record<string, any[]> = {
   "TODO": [
     { id: "t1", title: "Design Landing Page", priority: "HIGH", assignee: "AR", dueDate: "May 20" },
     { id: "t2", title: "Setup Database Schema", priority: "CRITICAL", assignee: "MJ", dueDate: "May 18" },
@@ -39,62 +37,7 @@ const initialTasks: any = {
   ],
 };
 
-export default function TaskKanban() {
-  const [columns, setColumns] = useState(initialTasks);
-  const [activeId, setActiveId] = useState<string | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={(e) => setActiveId(e.active.id as string)}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-6 overflow-x-auto pb-8 h-[calc(100vh-350px)] min-h-[500px]">
-        {Object.keys(columns).map((status) => (
-          <KanbanColumn 
-            key={status} 
-            id={status} 
-            title={status.replace("_", " ")} 
-            count={columns[status].length}
-          >
-            <SortableContext items={columns[status]} strategy={verticalListSortingStrategy}>
-               <div className="space-y-3">
-                  {columns[status].map((task: any) => (
-                    <TaskCard key={task.id} task={task} />
-                  ))}
-               </div>
-            </SortableContext>
-          </KanbanColumn>
-        ))}
-      </div>
-    </DndContext>
-  );
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Logic to move between columns...
-    // Reusing the same pattern as CRM Kanban
-    setActiveId(null);
-  }
-}
-
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Calendar, MessageSquare, Paperclip, MoreHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-function TaskCard({ task }: any) {
+function TaskCard({ task }: { task: any }) {
   const {
     attributes,
     listeners,
@@ -151,4 +94,66 @@ function TaskCard({ task }: any) {
       </div>
     </div>
   );
+}
+
+function KanbanColumn({ id, title, count, children }: { id: string; title: string; count: number; children: React.ReactNode }) {
+  return (
+    <div className="flex-1 min-w-[280px] bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl p-4 border border-transparent">
+      <div className="flex items-center justify-between mb-4 px-2">
+        <div className="flex items-center space-x-2">
+          <h3 className="font-bold text-sm text-slate-700 dark:text-slate-300">{title}</h3>
+          <span className="bg-slate-200 dark:bg-slate-800 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">
+            {count}
+          </span>
+        </div>
+      </div>
+      <div className="min-h-[500px] rounded-xl">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export default function TaskKanban() {
+  const [columns, setColumns] = useState(initialTasks);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={(e) => setActiveId(e.active.id as string)}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex gap-6 overflow-x-auto pb-8 h-[calc(100vh-350px)] min-h-[500px]">
+        {Object.keys(columns).map((status) => (
+          <KanbanColumn 
+            key={status} 
+            id={status} 
+            title={status.replace("_", " ")} 
+            count={columns[status].length}
+          >
+            <SortableContext items={columns[status]} strategy={verticalListSortingStrategy}>
+               <div className="space-y-3">
+                  {columns[status].map((task: any) => (
+                    <TaskCard key={task.id} task={task} />
+                  ))}
+               </div>
+            </SortableContext>
+          </KanbanColumn>
+        ))}
+      </div>
+    </DndContext>
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over) return;
+    setActiveId(null);
+  }
 }

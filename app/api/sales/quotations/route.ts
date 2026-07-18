@@ -27,18 +27,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const quotation = await prisma.quotation.create({
       data: {
-        ...body,
         tenantId: session.user.tenantId,
-        validUntil: new Date(body.validUntil),
-        items: {
-          create: body.items.map((item: any) => ({
-            productId: item.productId,
-            description: item.description,
-            qty: item.qty,
-            price: item.price,
-            total: item.total
-          }))
-        }
+        number: body.number || `QUO-${Date.now()}`,
+        contactId: body.contactId,
+        date: new Date(),
+        validTill: new Date(body.validTill || body.validUntil),
+        total: body.total,
+        status: body.status || "DRAFT",
       },
     });
 

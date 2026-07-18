@@ -49,18 +49,18 @@ export default function Sidebar() {
   return (
     <aside 
       className={cn(
-        "bg-slate-950 text-slate-400 h-screen transition-all duration-300 flex flex-col relative z-40 border-r border-slate-900",
+        "h-screen transition-all duration-300 flex flex-col relative z-40 border-r border-border/50 glass backdrop-blur-2xl",
         isSidebarCollapsed ? "w-20" : "w-72"
       )}
     >
       {/* Brand Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-900 overflow-hidden shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-injaazh-600 flex items-center justify-center text-white font-bold shrink-0 shadow-lg shadow-injaazh-600/20">
+      <div className="h-16 flex items-center px-6 border-b border-border/50 overflow-hidden shrink-0">
+        <div className="w-8 h-8 rounded-lg gold-gradient flex items-center justify-center text-obsidian-900 font-bold shrink-0 shadow-lg shadow-gold-400/30">
           I
         </div>
         {!isSidebarCollapsed && (
-          <span className="ml-3 font-bold text-xl text-white tracking-tight animate-in fade-in slide-in-from-left-2">
-            Injaazh<span className="text-injaazh-500">ERP</span>
+          <span className="ml-3 font-bold text-xl text-foreground tracking-tight animate-in fade-in slide-in-from-left-2 font-heading">
+            Injaazh<span className="text-gold-400">ERP</span>
           </span>
         )}
       </div>
@@ -68,14 +68,14 @@ export default function Sidebar() {
       {/* Collapse Toggle */}
       <button 
         onClick={toggleSidebar}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all z-50 shadow-sm"
+        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-all z-50 shadow-sm"
       >
         {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
 
       {/* Nav Items */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 custom-scrollbar">
-        <div className="space-y-1.5">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 scrollbar-thin">
+        <div className="space-y-1">
           {menuItems.map((item) => {
             // Role-based filtering
             const userRole = (session?.user as any)?.role;
@@ -92,30 +92,30 @@ export default function Sidebar() {
                 className="relative block"
               >
                 {isActive && (
-                  <div className="absolute -left-3 top-2 bottom-2 w-1 bg-injaazh-500 rounded-r-full shadow-[0_0_8px_rgba(13,142,233,0.8)] z-10" />
+                  <div className="absolute -left-3 top-2 bottom-2 w-1 bg-gold-400 rounded-r-full shadow-[0_0_12px_rgba(212,168,83,0.5)] z-10" />
                 )}
                 <motion.div
-                  whileHover={{ x: 6 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  whileHover={{ x: 4 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   className={cn(
                     "group flex items-center rounded-xl px-3 py-2.5 transition-all relative",
                     isActive 
-                      ? "bg-injaazh-600/10 text-white font-medium" 
-                      : "hover:bg-slate-900 hover:text-slate-200"
+                      ? "bg-gold-400/10 text-gold-400 font-medium" 
+                      : "hover:bg-accent/50 hover:text-foreground text-muted-foreground"
                   )}
                 >
                   <item.icon className={cn(
                     "w-5 h-5 shrink-0 transition-transform group-hover:scale-110",
-                    isActive ? "text-injaazh-500" : "text-slate-500"
+                    isActive ? "text-gold-400" : "text-muted-foreground"
                   )} />
                   {!isSidebarCollapsed && (
-                    <span className="ml-3 truncate animate-in fade-in duration-500">
+                    <span className="ml-3 truncate animate-in fade-in duration-500 text-sm">
                       {item.label}
                     </span>
                   )}
                   {item.premium && !isSidebarCollapsed && (
                     <div className="ml-auto">
-                      <Sparkles className="w-3 h-3 text-yellow-500" />
+                      <Sparkles className="w-3 h-3 text-gold-400" />
                     </div>
                   )}
                 </motion.div>

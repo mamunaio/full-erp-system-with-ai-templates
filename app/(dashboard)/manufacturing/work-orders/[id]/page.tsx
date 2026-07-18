@@ -4,7 +4,7 @@ import MaterialAvailability from "../../components/MaterialAvailability";
 import {
    Package, Play, CheckCircle2,
    ArrowLeft, Printer, Activity,
-   Calculator, History
+   Calculator, History, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,7 +68,7 @@ export default function WorkOrderDetailPage({ params }: { params: { id: string }
                      </div>
                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 p-6 rounded-3xl">
                         <p className="text-xs font-bold text-amber-800 dark:text-amber-200">Recommendation</p>
-                        <p className="text-[11px] text-amber-700 dark:text-amber-300/70 mt-2">Stock for "Z690 Motherboard" is low. A purchase order of at least 10 units is suggested to avoid production delays.</p>
+                        <p className="text-[11px] text-amber-700 dark:text-amber-300/70 mt-2">Stock for &quot;Z690 Motherboard&quot; is low. A purchase order of at least 10 units is suggested to avoid production delays.</p>
                      </div>
                   </div>
                </div>

@@ -13,37 +13,24 @@ export async function POST(
     const tenantId = session.user.tenantId;
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Get Quotation
       const quotation = await tx.quotation.findUnique({
         where: { id: params.id, tenantId },
-        include: { items: true }
       });
 
       if (!quotation) throw new Error("Quotation not found");
 
-      // 2. Create Sales Order
       const order = await tx.salesOrder.create({
         data: {
           tenantId,
           number: `SO-${Date.now()}`,
+          quotationId: quotation.id,
           contactId: quotation.contactId,
-          subtotal: quotation.subtotal,
-          tax: quotation.tax,
+          date: new Date(),
           total: quotation.total,
-          status: "CONFIRMED",
-          items: {
-            create: quotation.items.map((item) => ({
-              productId: item.productId,
-              description: item.description,
-              qty: item.qty,
-              price: item.price,
-              total: item.total
-            }))
-          }
+          status: "OPEN",
         }
       });
 
-      // 3. Update Quotation Status
       await tx.quotation.update({
         where: { id: params.id },
         data: { status: "ACCEPTED" }

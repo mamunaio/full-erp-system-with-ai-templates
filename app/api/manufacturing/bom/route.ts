@@ -11,7 +11,7 @@ export async function GET(req: Request) {
       where: { tenantId: session.user.tenantId },
       include: {
         product: { select: { name: true, sku: true } },
-        bomItems: true
+        items: true
       },
       orderBy: { createdAt: "desc" },
     });
@@ -34,13 +34,18 @@ export async function POST(req: Request) {
         productId: body.productId,
         name: body.name,
         version: body.version || "1.0",
-        bomItems: {
+        items: {
           create: body.items.map((item: any) => ({
-            productId: item.productId,
+            materialId: item.materialId || item.productId,
             quantity: item.quantity,
+            unit: item.unit || "PCS",
           }))
         }
       },
+      include: {
+        items: true,
+        product: { select: { name: true, sku: true } }
+      }
     });
 
     return NextResponse.json(bom);

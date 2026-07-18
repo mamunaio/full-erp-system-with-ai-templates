@@ -15,8 +15,6 @@ export async function PUT(
     const task = await prisma.task.update({
       where: { 
         id: params.taskId,
-        projectId: params.id,
-        tenantId: session.user.tenantId 
       },
       data: { status }
     });

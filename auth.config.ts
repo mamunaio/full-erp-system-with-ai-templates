@@ -13,7 +13,7 @@ export const authConfig = {
         if (isLoggedIn) return Response.redirect(new URL("/dashboard", nextUrl));
         return true;
       }
-      return true; // Middleware logic handled in middleware.ts
+      return true;
     },
     async jwt({ token, user }) {
       if (user) {
@@ -36,5 +36,5 @@ export const authConfig = {
       return session;
     },
   },
-  providers: [], // Empty array, we will add providers in auth.ts
+  providers: [],
 } satisfies NextAuthConfig;

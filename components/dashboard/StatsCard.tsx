@@ -36,11 +36,11 @@ export default function StatsCard({ title, value, change, trend, data, color = "
         <div className="h-[60px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke={color} 
-                strokeWidth={2} 
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke={color}
+                strokeWidth={2}
                 dot={false}
               />
             </LineChart>

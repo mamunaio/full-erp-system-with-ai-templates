@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  DndContext, 
-  DragOverlay, 
-  closestCorners, 
-  KeyboardSensor, 
-  PointerSensor, 
-  useSensor, 
-  useSensors 
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors
 } from "@dnd-kit/core";
 import KanbanColumn from "./KanbanColumn";
 import LeadCard, { Lead } from "./LeadCard";
@@ -46,8 +46,8 @@ export default function KanbanBoard() {
     if (!over) return;
 
     if (active.id !== over.id) {
-      setLeads((prev) => 
-        prev.map((lead) => 
+      setLeads((prev) =>
+        prev.map((lead) =>
           lead.id === active.id ? { ...lead, stage: over.id } : lead
         )
       );
@@ -58,31 +58,34 @@ export default function KanbanBoard() {
   const activeLead = activeId ? (leads.find(l => l.id === activeId) as Lead) : null;
 
   return (
-    <div className="flex space-x-6 overflow-x-auto pb-8 custom-scrollbar">
-      <DndContext 
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        {STAGES.map((stage) => {
-          const stageLeads = leads.filter(l => l.stage === stage.id);
-          const totalValue = stageLeads.reduce((acc, l) => acc + l.value, 0);
-          return (
-            <KanbanColumn 
-              key={stage.id} 
-              id={stage.id} 
-              title={stage.title} 
-              leads={stageLeads} 
-              totalValue={totalValue}
-            />
-          );
-        })}
+    <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
+      <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Pipeline Kanban</h3>
+      <div className="flex space-x-6 overflow-x-auto pb-2 custom-scrollbar">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          {STAGES.map((stage) => {
+            const stageLeads = leads.filter(l => l.stage === stage.id);
+            const totalValue = stageLeads.reduce((acc, l) => acc + l.value, 0);
+            return (
+              <KanbanColumn
+                key={stage.id}
+                id={stage.id}
+                title={stage.title}
+                leads={stageLeads}
+                totalValue={totalValue}
+              />
+            );
+          })}
 
-        <DragOverlay>
-          {activeLead ? <LeadCard lead={activeLead} /> : null}
-        </DragOverlay>
-      </DndContext>
+          <DragOverlay>
+            {activeLead ? <LeadCard lead={activeLead} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
     </div>
   );
 }

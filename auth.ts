@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { authConfig } from "./auth.config";
 
@@ -14,11 +13,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       async authorize(credentials) {
         const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6), tenantSlug: z.string().optional() })
+          .object({ 
+            email: z.string().email(), 
+            password: z.string().min(6), 
+            tenantSlug: z.string().optional() 
+          })
           .safeParse(credentials);
 
         if (parsedCredentials.success) {
           const { email, password, tenantSlug } = parsedCredentials.data;
+          
+          // Lazy import bcryptjs to avoid build issues
+          const bcrypt = await import("bcryptjs");
           
           const user = await prisma.user.findFirst({
             where: { email },
@@ -29,15 +35,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!user || !user.password) return null;
 
-          // If tenantSlug is provided, verify it matches
-          if (tenantSlug && user.tenant.slug !== tenantSlug) {
+          if (tenantSlug && user.tenant?.slug !== tenantSlug) {
             return null;
           }
 
           const passwordsMatch = await bcrypt.compare(password, user.password);
 
           if (passwordsMatch) {
-            // Fetch roles and permissions
             const roleData = await prisma.role.findFirst({
               where: { tenantId: user.tenantId, name: user.role }
             });
@@ -46,9 +50,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               id: user.id,
               name: user.name,
               email: user.email,
-              role: user.role,
+              role: user.role as any,
               tenantId: user.tenantId,
-              tenantSlug: user.tenant.slug,
+              tenantSlug: user.tenant?.slug || "",
               permissions: (roleData?.permissions as any) || [],
             };
           }

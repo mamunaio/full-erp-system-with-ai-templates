@@ -1,4 +1,5 @@
 import { PrismaClient, UserRole, ContactType } from "@prisma/client";
+import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
@@ -19,7 +20,8 @@ async function main() {
   });
   console.log("✅ Tenant created: Apex Industries Ltd.");
 
-  // 2. Users
+  // 2. Users (with hashed passwords)
+  const hashedPassword = await bcrypt.hash("password123", 10);
   const users = [
     { name: "Rahman Ahmed", email: "admin@injaazh.com", role: "ADMIN" as UserRole },
     { name: "Farhan Hossain", email: "farhan@apex-industries.com", role: "ADMIN" as UserRole },
@@ -31,10 +33,10 @@ async function main() {
   for (const u of users) {
     await prisma.user.upsert({
       where: { email: u.email },
-      update: {},
+      update: { password: hashedPassword },
       create: {
         ...u,
-        password: "password123", 
+        password: hashedPassword,
         tenantId: tenant.id
       }
     });

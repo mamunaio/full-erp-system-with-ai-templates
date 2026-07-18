@@ -1,6 +1,3 @@
-// This is a singleton cache service. 
-// It uses an in-memory map as a fallback but is structured for Redis integration.
-
 class CacheService {
   private cache = new Map<string, { value: any; expiry: number }>();
 
@@ -26,11 +23,15 @@ class CacheService {
   }
 
   async delPattern(pattern: string): Promise<void> {
-    const regex = new RegExp(pattern.replace("*", ".*"));
-    for (const key of this.cache.keys()) {
+    const regex = new RegExp(pattern.replace(/\*/g, ".*"));
+    const keysToDelete: string[] = [];
+    this.cache.forEach((_value, key) => {
       if (regex.test(key)) {
-        this.cache.delete(key);
+        keysToDelete.push(key);
       }
+    });
+    for (const key of keysToDelete) {
+      this.cache.delete(key);
     }
   }
 }
