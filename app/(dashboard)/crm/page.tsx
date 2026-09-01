@@ -1,252 +1,223 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Users, Target, TrendingUp, DollarSign, Plus, ArrowRight, Sparkles,
-  LayoutDashboard, UserCheck, Activity, Phone, Mail, Calendar, ArrowUpRight
+import { 
+  HeartHandshake, Plus, Search, Filter, 
+  Sparkles, DollarSign, TrendingUp, Target, 
+  Phone, Mail, Calendar, ArrowRight, CheckCircle2,
+  Clock, Award, BarChart3, ChevronRight, UserPlus
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-import AICommandBar from "@/components/dashboard/AICommandBar";
-import SmartAlerts from "@/components/dashboard/SmartAlerts";
-import KPICard from "@/components/dashboard/KPICard";
-import SalesBreakdown from "@/components/dashboard/SalesBreakdown";
+import KanbanBoard from "./components/KanbanBoard";
 import ActivityTimeline from "./components/ActivityTimeline";
 import NewLeadModal from "./components/NewLeadModal";
 
-const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 24, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
-
-const crmSuggestions = ["Lead pipeline analysis", "Conversion optimization", "Top opportunities", "Customer segmentation"];
-
-const crmAlerts = [
-  { id: "1", severity: "critical" as const, title: "High-Value Lead Stalled", description: "Meta Corp $50K deal has been in negotiation for 14 days — follow up now.", time: "30m ago" },
-  { id: "2", severity: "warning" as const, title: "Lead Response Time", description: "Average first response time increased to 4.2 hours.", time: "2h ago" },
-  { id: "3", severity: "info" as const, title: "New Lead Influx", description: "18 new leads from LinkedIn campaign — highest this quarter.", time: "4h ago" },
-  { id: "4", severity: "warning" as const, title: "Pipeline Stagnation", description: "2 deals in proposal stage for over 30 days without movement.", time: "6h ago" },
-  { id: "5", severity: "info" as const, title: "Deal Won", description: "SpaceX Systems closed at $85K — congratulations team!", time: "8h ago" },
-];
-
-const salesCategories = [
-  { name: "Enterprise SaaS", value: 450 },
-  { name: "Hardware", value: 280 },
-  { name: "Services", value: 210 },
-  { name: "Support", value: 150 },
-  { name: "Consulting", value: 100 },
-];
-
 const hotLeads = [
-  { name: "Meta Corp", value: "$12,000", score: 98 },
-  { name: "Tesla Inc", value: "$50,000", score: 92 },
-  { name: "Amazon AWS", value: "$35,000", score: 85 },
+  { id: "h1", name: "Meta Corp", contact: "Mark Vance", value: "$85,000", score: 98, status: "Negotiation", probability: "92%", stage: "PROPOSAL" },
+  { id: "h2", name: "SpaceX Systems", contact: "Elena Rostova", value: "$62,000", score: 94, status: "Contract Review", probability: "88%", stage: "PROPOSAL" },
+  { id: "h3", name: "Tesla Energy", contact: "Marcus Sterling", value: "$48,000", score: 89, status: "Demo Completed", probability: "76%", stage: "QUALIFIED" },
+  { id: "h4", name: "Stripe Billing Hub", contact: "Chloe Dupont", value: "$35,000", score: 84, status: "Discovery Call", probability: "65%", stage: "CONTACTED" },
 ];
 
-const moduleLinks = [
-  { href: "/crm/pipeline", title: "Pipeline", description: "Deal Flow", icon: LayoutDashboard, trend: "Active" },
-  { href: "/crm/contacts", title: "Contacts", description: "2,450 Records", icon: UserCheck, trend: "+8%" },
-  { href: "/crm/activities", title: "Activities", description: "Task Log", icon: Activity, trend: "Today" },
+const funnelMetrics = [
+  { stage: "Total Leads Discovered", count: 184, value: "$6.2M", conv: "100%" },
+  { stage: "Qualified Opportunities", count: 86, value: "$4.1M", conv: "46.7%" },
+  { stage: "Proposal & Pitch", count: 42, value: "$2.8M", conv: "22.8%" },
+  { stage: "Contract Negotiation", count: 18, value: "$1.4M", conv: "9.7%" },
+  { stage: "Closed Won Deals", count: 12, value: "$850K", conv: "6.5%" },
 ];
 
 export default function CRMDashboard() {
-  const [loading, setLoading] = useState(true);
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
-          <div className="relative w-10 h-10">
-            <div className="absolute inset-0 rounded-xl border-2 border-gold-500/20" />
-            <div className="absolute inset-0 rounded-xl border-2 border-transparent border-t-gold-500 animate-spin" />
-            <div className="absolute inset-1 rounded-lg bg-gold-500/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-gold-400 animate-pulse" />
-            </div>
-          </div>
-          <span className="text-sm text-muted-foreground font-medium">Loading CRM...</span>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-8 max-w-[1600px] mx-auto">
-      <motion.div variants={fadeUp}>
-        <div className="bg-card/40 backdrop-blur-2xl rounded-2xl border border-border p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gold-500/5 blur-[80px] pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-gold-500/5 blur-[60px] pointer-events-none" />
+    <div className="space-y-6 pb-12 max-w-[1600px] mx-auto">
+      {/* Top Banner: Pipeline Velocity & Win Rate Matrix */}
+      <div className="glass-strong rounded-3xl p-5 sm:p-7 border border-border/80 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">CRM Online</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight font-heading">
-                CRM <span className="text-gold-400">Intelligence</span>
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Strategic relationship management and deal flow optimization.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => toast.info("Fetching recent activities...")}
-                className="rounded-[20px] h-14 px-8 border-border bg-card/60 font-bold"
-              >
-                Activity Log
-              </Button>
-              <Button
-                onClick={() => setIsLeadModalOpen(true)}
-                className="bg-gold-500 hover:bg-gold-600 text-obsidian-900 rounded-[20px] h-14 px-10 shadow-lg shadow-gold-500/20 font-bold uppercase tracking-tight transition-all active:scale-95"
-              >
-                <Plus className="w-5 h-5 mr-3" /> New Lead
-              </Button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <AICommandBar suggestions={crmSuggestions} />
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard title="Total Leads" value="1,284" change="+18%" trend="up" icon={Users} sparkline={[850, 950, 1050, 1100, 1180, 1240, 1284]} />
-          <KPICard title="Active Deals" value="42" change="+6" trend="up" icon={Target} sparkline={[28, 30, 34, 36, 38, 40, 42]} />
-          <KPICard title="Conversion Rate" value="24.8%" change="+2.4%" trend="up" icon={TrendingUp} sparkline={[18, 20, 21, 22, 23, 24, 24.8]} />
-          <KPICard title="Pipeline Value" value="$2.4M" change="+12%" trend="up" icon={DollarSign} sparkline={[1.6, 1.8, 1.9, 2.0, 2.1, 2.2, 2.4]} />
-        </div>
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 [&>*]:break-inside-avoid [&>*]:mb-4">
-          <SalesBreakdown data={salesCategories} />
-          <SmartAlerts data={crmAlerts} />
-          <ActivityTimeline />
-
-          <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-            <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Sales Funnel</h3>
-            <div className="space-y-3">
-              <PipelineBar label="New Leads" value={45} count="45" />
-              <PipelineBar label="Contacted" value={32} count="32" />
-              <PipelineBar label="Qualified" value={18} count="18" />
-              <PipelineBar label="Proposal" value={12} count="12" />
-              <PipelineBar label="Won" value={8} count="8" />
-            </div>
-            <Link href="/crm/pipeline">
-              <Button variant="ghost" className="w-full mt-3 text-[10px] font-bold text-gold-400 uppercase tracking-widest">View Full Pipeline</Button>
-            </Link>
-          </div>
-
-          <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-card-foreground font-heading">Top Hot Leads</h3>
-              <span className="flex items-center text-[9px] font-bold text-rose-400 uppercase tracking-widest bg-rose-500/15 px-2 py-1 rounded-full">
-                <Phone className="w-3 h-3 mr-1" /> High Intent
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
+              <span className="text-[11px] font-extrabold text-blue-500 dark:text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
+                Revenue Pipeline Active
               </span>
             </div>
-            <div className="space-y-1">
-              {hotLeads.map((lead) => (
-                <HotLeadRow key={lead.name} name={lead.name} value={lead.value} score={lead.score} />
-              ))}
-            </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold font-heading text-foreground">
+              CRM & <span className="gold-text">Deal Velocity Hub</span>
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-xl">
+              Manage high-probability enterprise sales cycles, lead intelligence, and revenue pipeline progression.
+            </p>
           </div>
 
-          <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-            <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Quick Navigation</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {moduleLinks.map((mod) => (
-                <Link key={mod.href} href={mod.href}>
-                  <div className="group flex items-center gap-4 p-4 rounded-xl bg-gold-500/5 hover:bg-gold-500/10 border border-transparent hover:border-gold-500/20 transition-all cursor-pointer">
-                    <div className="w-12 h-12 rounded-xl bg-gold-500/20 flex items-center justify-center text-gold-400 shadow-md group-hover:scale-110 transition-transform shrink-0">
-                      <mod.icon className="w-6 h-6" />
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/crm/contacts">
+              <Button variant="outline" className="rounded-2xl h-11 sm:h-12 px-5 border-border bg-card/60 font-bold text-xs sm:text-sm hover:bg-accent">
+                <HeartHandshake className="w-4 h-4 mr-2 text-gold-500" /> Contact Directory (2.4k)
+              </Button>
+            </Link>
+            <Button 
+              onClick={() => setIsLeadModalOpen(true)}
+              className="gold-gradient text-obsidian-900 font-extrabold text-xs sm:text-sm rounded-2xl h-11 sm:h-12 px-6 shadow-lg shadow-gold-500/20 hover:opacity-90"
+            >
+              <Plus className="w-4 h-4 mr-1.5" /> Create New Deal
+            </Button>
+          </div>
+        </div>
+
+        {/* Pipeline Financial Metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 mt-6 border-t border-border/50">
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Active Pipeline Value</span>
+              <DollarSign className="w-3.5 h-3.5 text-gold-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-foreground font-heading">$3,480,000</div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Avg Deal Win Rate</span>
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-emerald-500 font-heading">68.4% <span className="text-xs text-muted-foreground font-sans font-medium">YoY +8%</span></div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Deals in Pipeline</span>
+              <Target className="w-3.5 h-3.5 text-blue-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-foreground font-heading">42 Deals</div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Avg Sales Velocity</span>
+              <Clock className="w-3.5 h-3.5 text-purple-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-foreground font-heading">18.4 Days</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Section 1: Visual Interactive Kanban Board */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">Interactive Deal Flow Board</h3>
+            <p className="text-xs text-muted-foreground">Drag deals across stages to update status and synchronize revenue forecasts</p>
+          </div>
+          <Link href="/crm/pipeline">
+            <Button variant="ghost" size="sm" className="text-xs font-semibold text-gold-500 hover:text-gold-400">
+              Full Pipeline <ChevronRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </Link>
+        </div>
+
+        <KanbanBoard />
+      </div>
+
+      {/* Main Section 2: AI Hot Leads Priority + Sales Funnel + Live Activities */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Cols: AI Priority Hot Leads + Sales Funnel */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* AI Hot Leads */}
+          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gold-500/10 flex items-center justify-center text-gold-500 border border-gold-500/20">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground font-heading">AI-Scored Hot Deals</h3>
+                  <p className="text-xs text-muted-foreground">Google Gemini predictive win probability model</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                High Close Probability
+              </span>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3 pt-2">
+              {hotLeads.map((lead) => (
+                <div key={lead.id} className="p-4 rounded-2xl bg-card/60 hover:bg-card border border-border/70 hover:border-gold-500/40 transition-all space-y-3 group shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground group-hover:text-gold-500 transition-colors">{lead.name}</h4>
+                      <p className="text-[11px] text-muted-foreground">Contact: {lead.contact}</p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-bold text-card-foreground group-hover:text-gold-400 transition-colors font-heading">{mod.title}</h4>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{mod.description}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold text-gold-400 uppercase tracking-widest bg-gold-500/10 px-2 py-1 rounded-full">{mod.trend}</span>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold-400 group-hover:translate-x-1 transition-all" />
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gold-500/15 text-gold-500 border border-gold-500/30">
+                      ★ {lead.score}/100
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="text-lg font-extrabold gold-text font-heading">{lead.value}</div>
+                    <span className="text-[10px] font-bold text-muted-foreground bg-accent/60 px-2 py-0.5 rounded-md">
+                      {lead.status}
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
+                    <span className="text-[10px] text-emerald-500 font-semibold">{lead.probability} Win Odds</span>
+                    <div className="flex items-center gap-1.5">
+                      <button 
+                        onClick={() => toast.success(`Call initiated with ${lead.contact}`)}
+                        className="px-2 py-1 rounded-lg bg-accent/60 hover:bg-gold-500/20 hover:text-gold-500 text-[10px] font-bold transition-colors"
+                      >
+                        Call
+                      </button>
+                      <button 
+                        onClick={() => toast.success(`Proposal draft opened for ${lead.name}`)}
+                        className="px-2 py-1 rounded-lg bg-gold-500/15 text-gold-500 hover:bg-gold-500/30 text-[10px] font-bold transition-colors"
+                      >
+                        Pitch
+                      </button>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-            <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4 flex items-center gap-2">
-              <Mail className="w-4 h-4 text-gold-400" /> Recent Activity
-            </h3>
-            <div className="space-y-3">
-              <ContactActivity icon={Phone} label="Call" desc="Discovery call with Alex Rivera" time="10:30 AM" color="text-emerald-400" />
-              <ContactActivity icon={Mail} label="Email" desc="Proposal sent to Sarah Connor" time="Yesterday, 4:15 PM" color="text-gold-400" />
-              <ContactActivity icon={Calendar} label="Meeting" desc="Requirements discussion scheduled" time="Tomorrow, 11:00 AM" color="text-amber-400" />
-              <ContactActivity icon={ArrowUpRight} label="Deal" desc="SpaceX Systems closed at $85K" time="8h ago" color="text-emerald-400" />
+          {/* Sales Conversion Funnel */}
+          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
+            <div>
+              <h3 className="text-base font-bold text-foreground font-heading">Sales Conversion Funnel</h3>
+              <p className="text-xs text-muted-foreground">Drop-off and conversion rates across sales milestones</p>
+            </div>
+
+            <div className="space-y-2.5 pt-2">
+              {funnelMetrics.map((f, i) => (
+                <div key={i} className="p-3 rounded-xl bg-card/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="w-5 h-5 rounded-lg bg-accent text-[10px] font-bold flex items-center justify-center text-muted-foreground">{i + 1}</span>
+                    <span className="text-xs font-semibold text-foreground">{f.stage}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs">
+                    <span className="text-muted-foreground">{f.count} deals</span>
+                    <span className="font-bold text-foreground">{f.value}</span>
+                    <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">{f.conv}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </motion.div>
 
-      <NewLeadModal isOpen={isLeadModalOpen} onClose={() => setIsLeadModalOpen(false)} />
-    </motion.div>
-  );
-}
-
-function PipelineBar({ label, value, count }: { label: string; value: number; count: string }) {
-  return (
-    <div className="space-y-1.5 group cursor-pointer">
-      <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-        <span className="group-hover:text-gold-400 transition-colors">{label}</span>
-        <span className="font-bold">{count} Deals</span>
-      </div>
-      <div className="w-full h-2 bg-border rounded-full overflow-hidden">
-        <div className="h-full rounded-full bg-gold-500 transition-all" style={{ width: `${value}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function HotLeadRow({ name, value, score }: { name: string; value: string; score: number }) {
-  return (
-    <div className="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-gold-500/5 transition-all cursor-pointer group">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-400 text-xs font-bold">{name[0]}</div>
-        <div>
-          <p className="text-sm font-bold text-card-foreground group-hover:text-gold-400 transition-colors leading-none mb-0.5">{name}</p>
-          <p className="text-[10px] text-muted-foreground">Value: {value}</p>
+        {/* Right 1 Col: Customer Activity Stream */}
+        <div className="space-y-6">
+          <ActivityTimeline />
         </div>
       </div>
-      <div className="text-right">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">AI Score</p>
-        <p className={`text-sm font-bold ${score > 90 ? "text-rose-400" : "text-amber-400"}`}>{score}%</p>
-      </div>
-    </div>
-  );
-}
 
-function ContactActivity({ icon: Icon, label, desc, time, color }: { icon: any; label: string; desc: string; time: string; color: string }) {
-  return (
-    <div className="flex items-start gap-3 pb-3 border-b border-border last:border-b-0 last:pb-0">
-      <div className={`w-8 h-8 rounded-xl ${color.replace("text", "bg").replace("400", "500/15")} flex items-center justify-center ${color} shrink-0`}>
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-card-foreground">{desc}</p>
-        <p className="text-[10px] text-muted-foreground">{time}</p>
-      </div>
+      <NewLeadModal isOpen={isLeadModalOpen} onClose={() => setIsLeadModalOpen(false)} />
     </div>
   );
 }

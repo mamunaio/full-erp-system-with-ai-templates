@@ -1,198 +1,254 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  DollarSign, TrendingUp, TrendingDown, CreditCard, Plus,
-  ArrowUpRight, ArrowDownRight, ArrowDownLeft, Search, Filter,
-  FileDown, Wallet, Receipt, PieChart, History, ArrowRight, Sparkles
+import { 
+  Wallet, DollarSign, TrendingUp, TrendingDown, 
+  CreditCard, Plus, Search, Filter, FileText, 
+  ArrowUpRight, ArrowDownLeft, CheckCircle2, 
+  Clock, AlertCircle, Sparkles, Receipt,
+  Landmark, ArrowRight, ChevronRight, Mail, FileDown
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-import AICommandBar from "@/components/dashboard/AICommandBar";
-import SmartAlerts from "@/components/dashboard/SmartAlerts";
-import KPICard from "@/components/dashboard/KPICard";
-import RevenueChart from "@/components/dashboard/RevenueChart";
 import NewTransactionModal from "./components/NewTransactionModal";
 
-const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 24, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
-
-const financeSuggestions = [ "Cash flow analysis", "Expense breakdown", "Profit margin trends", "Budget vs actual" ];
-
-const financeAlerts = [
-  { id: "1", severity: "critical" as const, title: "Cash Flow Alert", description: "Operating cash ratio dropped to 1.2x — below 1.5x threshold.", time: "30m ago" },
-  { id: "2", severity: "warning" as const, title: "Invoice Overdue", description: "3 invoices totaling $18,500 are past due date.", time: "2h ago" },
-  { id: "3", severity: "info" as const, title: "Revenue Milestone", description: "Monthly revenue crossed $400K for the first time.", time: "4h ago" },
-  { id: "4", severity: "warning" as const, title: "Expense Spike", description: "Q3 operational expenses up 12% vs Q2.", time: "6h ago" },
-  { id: "5", severity: "info" as const, title: "Tax Filing Reminder", description: "Quarterly VAT return due in 14 days.", time: "8h ago" },
+const treasuryVaults = [
+  { id: "v1", name: "Master Operating Account", bank: "Standard Chartered Bank • 8821", balance: "$840,250.00", status: "Synced", color: "from-amber-500 to-yellow-300" },
+  { id: "v2", name: "Payroll Reserve Vault", bank: "HSBC Commercial • 4410", balance: "$250,000.00", status: "Protected", color: "from-blue-500 to-cyan-300" },
+  { id: "v3", name: "Tax & VAT Escrow", bank: "BRAC Bank Corporate • 9012", balance: "$115,250.00", status: "Compliant", color: "from-emerald-500 to-teal-300" },
+  { id: "v4", name: "Petty Cash & Ops", bank: "City Bank Fleet • 1120", balance: "$35,000.00", status: "Active", color: "from-purple-500 to-indigo-300" },
 ];
 
-const cashFlowData = [
-  { month: "Jan", revenue: 350000, expense: 180000 },
-  { month: "Feb", revenue: 380000, expense: 190000 },
-  { month: "Mar", revenue: 340000, expense: 175000 },
-  { month: "Apr", revenue: 400000, expense: 200000 },
-  { month: "May", revenue: 390000, expense: 195000 },
-  { month: "Jun", revenue: 420000, expense: 210000 },
-  { month: "Jul", revenue: 450000, expense: 220000 },
-  { month: "Aug", revenue: 430000, expense: 215000 },
-  { month: "Sep", revenue: 480000, expense: 235000 },
-  { month: "Oct", revenue: 460000, expense: 225000 },
-  { month: "Nov", revenue: 510000, expense: 250000 },
-  { month: "Dec", revenue: 550000, expense: 270000 },
+const liveTransactions = [
+  { id: "TX-8842", desc: "Enterprise SaaS Annual - Meta Corp", date: "Today, 02:45 PM", type: "CREDIT", amount: "+$85,000.00", account: "Master Operating", status: "RECONCILED" },
+  { id: "TX-8841", desc: "AWS Cloud Infrastructure - August Bill", date: "Today, 11:20 AM", type: "DEBIT", amount: "-$4,850.00", account: "Petty Cash & Ops", status: "RECONCILED" },
+  { id: "TX-8840", desc: "SpaceX Milestone 2 Contract Wire", date: "Yesterday, 04:15 PM", type: "CREDIT", amount: "+$62,000.00", account: "Master Operating", status: "RECONCILED" },
+  { id: "TX-8839", desc: "Office HQ Server Infrastructure Lease", date: "Sep 01, 09:30 AM", type: "DEBIT", amount: "-$12,400.00", account: "Master Operating", status: "PENDING" },
+  { id: "TX-8838", desc: "Logitech Bulk Hardware Inventory PO", date: "Aug 30, 03:00 PM", type: "DEBIT", amount: "-$8,250.00", account: "Master Operating", status: "RECONCILED" },
+];
+
+const agingBuckets = [
+  { label: "Current (0-30 Days)", amount: "$184,500.00", count: 8, status: "Healthy", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
+  { label: "Overdue (31-60 Days)", amount: "$42,000.00", count: 3, status: "Attention", color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
+  { label: "Critical Overdue (60+ Days)", amount: "$18,500.00", count: 2, status: "Escalate", color: "text-rose-500 bg-rose-500/10 border-rose-500/20" },
 ];
 
 export default function FinanceDashboard() {
-  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSendingReminders, setIsSendingReminders] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
-          <div className="relative w-10 h-10">
-            <div className="absolute inset-0 rounded-xl border-2 border-gold-500/20" />
-            <div className="absolute inset-0 rounded-xl border-2 border-transparent border-t-gold-500 animate-spin" />
-            <div className="absolute inset-1 rounded-lg bg-gold-500/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-gold-400 animate-pulse" />
-            </div>
-          </div>
-          <span className="text-sm text-muted-foreground font-medium">Loading Finance...</span>
-        </motion.div>
-      </div>
-    );
-  }
+  const handleDispatchReminders = () => {
+    setIsSendingReminders(true);
+    setTimeout(() => {
+      setIsSendingReminders(false);
+      toast.success("Automated payment reminders dispatched to 5 overdue invoice contacts!");
+    }, 1000);
+  };
 
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-8 max-w-[1600px] mx-auto">
-      <motion.div variants={fadeUp}>
-        <div className="bg-card/40 backdrop-blur-2xl rounded-2xl border border-border p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gold-500/5 blur-[80px] pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-gold-500/5 blur-[60px] pointer-events-none" />
+    <div className="space-y-6 pb-12 max-w-[1600px] mx-auto">
+      {/* Top Banner: Fiscal Treasury & Master Ledger */}
+      <div className="glass-strong rounded-3xl p-5 sm:p-7 border border-border/80 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Finance Online</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight font-heading">
-                Finance <span className="text-gold-400">Hub</span>
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Real-time financial intelligence and treasury management.
-              </p>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-[11px] font-extrabold text-emerald-500 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                Master Treasury Active
+              </span>
             </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold font-heading text-foreground">
+              Master Ledger & <span className="gold-text">Fiscal Health</span>
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-xl">
+              Double-entry automated ledger, multi-currency liquidity vaults, P&L analytics, and invoice collection.
+            </p>
+          </div>
 
-            <div className="flex items-center gap-3">
-              <Link href="/finance/reports">
-                <Button variant="outline" className="rounded-[20px] h-14 px-8 border-border bg-card/60 font-bold">
-                  Monthly Report
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/finance/invoices">
+              <Button variant="outline" className="rounded-2xl h-11 sm:h-12 px-5 border-border bg-card/60 font-bold text-xs sm:text-sm hover:bg-accent">
+                <FileText className="w-4 h-4 mr-2 text-gold-500" /> Invoices & Billing
+              </Button>
+            </Link>
+            <Button 
+              onClick={() => setIsModalOpen(true)}
+              className="gold-gradient text-obsidian-900 font-extrabold text-xs sm:text-sm rounded-2xl h-11 sm:h-12 px-6 shadow-lg shadow-gold-500/20 hover:opacity-90"
+            >
+              <Plus className="w-4 h-4 mr-1.5" /> Record Transaction
+            </Button>
+          </div>
+        </div>
+
+        {/* Core Fiscal Indicators */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 mt-6 border-t border-border/50">
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Total Liquid Treasury</span>
+              <Landmark className="w-3.5 h-3.5 text-gold-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-foreground font-heading">$1,240,500</div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Monthly Inflow (Sept)</span>
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-emerald-500 font-heading">$420,000 <span className="text-xs text-muted-foreground font-sans font-medium">+12%</span></div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Monthly Outflow (Sept)</span>
+              <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-rose-500 font-heading">$195,000</div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Net Operating Margin</span>
+              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-foreground font-heading">53.5% <span className="text-xs text-emerald-500 font-sans font-bold">Strong</span></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Section 1: Treasury Balances / Liquidity Vaults */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">Treasury Liquidity Vaults</h3>
+            <p className="text-xs text-muted-foreground">Real-time balances across authorized enterprise accounts</p>
+          </div>
+          <Link href="/finance/accounts">
+            <Button variant="ghost" size="sm" className="text-xs font-semibold text-gold-500 hover:text-gold-400">
+              Account Ledger <ChevronRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {treasuryVaults.map((vault) => (
+            <div key={vault.id} className="glass rounded-3xl p-5 border border-border/80 shadow-lg space-y-3 relative overflow-hidden group hover:border-gold-500/30 transition-all">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-foreground group-hover:text-gold-500 transition-colors">{vault.name}</h4>
+                  <p className="text-[10px] text-muted-foreground">{vault.bank}</p>
+                </div>
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  {vault.status}
+                </span>
+              </div>
+
+              <div className="text-2xl font-extrabold gold-text font-heading pt-2">
+                {vault.balance}
+              </div>
+
+              <div className="pt-2 border-t border-border/40 flex items-center justify-between text-[10px] text-muted-foreground">
+                <span>Encrypted Bank Node</span>
+                <span className="text-emerald-500 font-semibold">Live Feed</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Section 2: Live Double-Entry Ledger Table + Invoice Aging Matrix */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Cols: Live Double-Entry Ledger */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-foreground font-heading">Double-Entry Transaction Stream</h3>
+                <p className="text-xs text-muted-foreground">Audited cryptographic transaction log with account reconciliation</p>
+              </div>
+              <Link href="/finance/transactions">
+                <Button variant="ghost" size="sm" className="text-xs font-semibold text-gold-500 hover:text-gold-400">
+                  All Records <ChevronRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
               </Link>
-              <Button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-gold-500 hover:bg-gold-600 text-obsidian-900 rounded-[20px] h-14 px-10 shadow-lg shadow-gold-500/20 font-bold uppercase tracking-tight transition-all active:scale-95"
-              >
-                <Plus className="w-5 h-5 mr-3" /> New Transaction
-              </Button>
+            </div>
+
+            <div className="divide-y divide-border/50">
+              {liveTransactions.map((tx) => (
+                <div key={tx.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                      tx.type === "CREDIT" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                    }`}>
+                      {tx.type === "CREDIT" ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-foreground">{tx.desc}</h4>
+                      <p className="text-[10px] text-muted-foreground">{tx.date} • {tx.account}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 justify-between sm:justify-end">
+                    <div className={`text-sm sm:text-base font-extrabold font-heading ${
+                      tx.type === "CREDIT" ? "text-emerald-500" : "text-rose-500"
+                    }`}>
+                      {tx.amount}
+                    </div>
+
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${
+                      tx.status === "RECONCILED" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                    }`}>
+                      {tx.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </motion.div>
 
-      <motion.div variants={fadeUp}>
-        <AICommandBar suggestions={financeSuggestions} />
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard title="Total Balance" value="$1,240,500" change="+12.5%" trend="up" icon={Wallet} sparkline={[850, 920, 980, 1050, 1100, 1180, 1240]} />
-          <KPICard title="Monthly Revenue" value="$420,000" change="+8.2%" trend="up" icon={TrendingUp} sparkline={[320, 350, 340, 380, 390, 410, 420]} />
-          <KPICard title="Monthly Expenses" value="$185,200" change="+2.4%" trend="down" icon={TrendingDown} sparkline={[170, 175, 172, 180, 178, 182, 185]} />
-          <KPICard title="Net Profit" value="$234,800" change="+15.2%" trend="up" icon={PieChart} sparkline={[150, 175, 168, 190, 210, 220, 234]} />
-        </div>
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 [&>*]:break-inside-avoid [&>*]:mb-4">
-          <div className="lg:col-span-1">
-            <RevenueChart data={cashFlowData} />
-          </div>
-          <div>
-            <SmartAlerts data={financeAlerts} />
-          </div>
-          <div className="space-y-4">
-            <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-              <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Recent Transactions</h3>
-              <div className="space-y-1">
-                <TransactionItem name="Cisco Systems Inc." category="Hardware Purchase" amount="-$12,500" date="Today, 02:45 PM" type="expense" />
-                <TransactionItem name="Global Tech Solutions" category="Service Subscription" amount="+$8,240" date="Today, 11:20 AM" type="income" />
-                <TransactionItem name="Amazon Web Services" category="Cloud Infrastructure" amount="-$2,400" date="Yesterday, 06:10 PM" type="expense" />
-                <TransactionItem name="Meta Platforms" category="Ad Revenue Share" amount="+$4,120" date="Yesterday, 09:30 AM" type="income" />
+        {/* Right 1 Col: Invoice Aging & Collection Hub */}
+        <div className="space-y-6">
+          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-foreground font-heading">Invoice Aging Matrix</h4>
+                <p className="text-[11px] text-muted-foreground">Accounts receivable liquidity pipeline</p>
               </div>
-              <Link href="/finance/journal">
-                <Button variant="ghost" className="w-full mt-3 text-[10px] font-bold text-gold-400 uppercase tracking-widest">View All Transactions</Button>
-              </Link>
+              <Receipt className="w-4 h-4 text-gold-500" />
             </div>
 
-            <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-              <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Pending Payments</h3>
-              <div className="space-y-3">
-                <PendingItem name="Vertex Agency" amount="$4,500" due="In 2 days" color="text-amber-400" />
-                <PendingItem name="Orizon Logistics" amount="$12,200" due="Overdue" color="text-rose-400" />
-                <PendingItem name="Skyline Towers" amount="$8,000" due="In 5 days" color="text-blue-400" />
-              </div>
-              <Link href="/finance/invoices">
-                <Button variant="ghost" className="w-full mt-3 text-[10px] font-bold text-gold-400 uppercase tracking-widest">Manage Invoices</Button>
-              </Link>
+            <div className="space-y-3 pt-1">
+              {agingBuckets.map((bucket, idx) => (
+                <div key={idx} className="p-3.5 rounded-2xl bg-card/50 border border-border space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">{bucket.label}</span>
+                    <span className={`text-[9px] font-bold px-2 py-0.2 rounded-full border ${bucket.color}`}>
+                      {bucket.status}
+                    </span>
+                  </div>
+                  <div className="text-xl font-extrabold text-foreground font-heading">{bucket.amount}</div>
+                  <p className="text-[10px] text-muted-foreground">{bucket.count} active customer invoices</p>
+                </div>
+              ))}
             </div>
+
+            <Button 
+              onClick={handleDispatchReminders}
+              disabled={isSendingReminders}
+              className="w-full gold-gradient text-obsidian-900 font-extrabold text-xs rounded-2xl h-11 shadow-md shadow-gold-500/20"
+            >
+              {isSendingReminders ? "Sending Reminders..." : "1-Click Remind Overdue Invoices"}
+            </Button>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       <NewTransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </motion.div>
-  );
-}
-
-function TransactionItem({ name, category, amount, date, type }: any) {
-  return (
-    <div className="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-gold-500/5 transition-all cursor-pointer group">
-      <div className="flex items-center gap-3">
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-xs", type === "income" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400")}>
-          {type === "income" ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-card-foreground group-hover:text-gold-400 transition-colors truncate">{name}</p>
-          <p className="text-[10px] text-muted-foreground">{category} · {date}</p>
-        </div>
-      </div>
-      <p className={cn("text-sm font-bold", type === "income" ? "text-emerald-400" : "text-card-foreground")}>{amount}</p>
-    </div>
-  );
-}
-
-function PendingItem({ name, amount, due, color }: any) {
-  return (
-    <div className="flex items-center justify-between group cursor-pointer">
-      <div className="flex items-center gap-3">
-        <div className="w-2 h-2 rounded-full bg-gold-500/50 group-hover:bg-gold-500 transition-colors" />
-        <div>
-          <p className="text-sm font-bold text-card-foreground leading-none">{name}</p>
-          <p className={cn("text-[9px] font-bold uppercase tracking-widest mt-0.5", color)}>{due}</p>
-        </div>
-      </div>
-      <p className="font-bold text-sm text-card-foreground">{amount}</p>
     </div>
   );
 }

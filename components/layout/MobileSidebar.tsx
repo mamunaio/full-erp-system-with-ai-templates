@@ -17,9 +17,8 @@ export default function MobileSidebar() {
 
   return (
     <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-      <SheetContent side="left" className="p-0 w-72 bg-slate-950 border-none">
+      <SheetContent side="left" className="p-0 w-[280px] bg-card/95 backdrop-blur-3xl border-r border-border/60 shadow-2xl">
         <div className="h-full">
-          {/* We reuse the Sidebar but override some styles if needed */}
           <Sidebar />
         </div>
       </SheetContent>

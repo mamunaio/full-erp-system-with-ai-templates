@@ -25,12 +25,12 @@ export default function RevenueChart({ data }: { data: DataPoint[] }) {
       <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-gold-500/5 blur-[60px] pointer-events-none" />
 
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <h3 className="text-base font-semibold text-card-foreground font-heading">Revenue Trend</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Monthly performance overview</p>
           </div>
-          <div className="flex items-center gap-1 bg-card/40 rounded-lg p-0.5 border border-border/50">
+          <div className="flex items-center gap-1 bg-card/40 rounded-lg p-0.5 border border-border/50 self-start sm:self-auto">
             {ranges.map((r) => (
               <button
                 key={r}

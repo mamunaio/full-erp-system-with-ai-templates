@@ -19,8 +19,8 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "sans-serif"],
-        heading: ["var(--font-playfair)", "serif"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        heading: ["var(--font-playfair)", "Georgia", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -70,19 +70,18 @@ const config: Config = {
           950: "#221505",
         },
         obsidian: {
-          50: "#F0F0F2",
-          100: "#D1D1D8",
-          200: "#A3A3B0",
-          300: "#757589",
-          400: "#474761",
-          500: "#2A2A33",
-          600: "#1C1C22",
-          700: "#151519",
-          800: "#0C0C0E",
-          900: "#060607",
-          950: "#030303",
+          50: "#F4F4F6",
+          100: "#E2E2E8",
+          200: "#C4C4D0",
+          300: "#9E9EB2",
+          400: "#6B6B84",
+          500: "#454558",
+          600: "#2A2A38",
+          700: "#1A1A24",
+          800: "#101018",
+          900: "#0A0A0F",
+          950: "#050508",
         },
-        // Legacy alias — maps to gold palette for backward compatibility
         injaazh: {
           50: "#FDF8ED",
           100: "#F9EDCC",
@@ -103,6 +102,14 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
         xl: "calc(var(--radius) + 4px)",
         "2xl": "calc(var(--radius) + 8px)",
+        "3xl": "calc(var(--radius) + 16px)",
+      },
+      boxShadow: {
+        glow: "0 0 25px -5px rgba(212, 168, 83, 0.3)",
+        "glow-lg": "0 0 45px -10px rgba(212, 168, 83, 0.4)",
+        "glow-cyan": "0 0 35px -5px rgba(6, 182, 212, 0.35)",
+        "glow-emerald": "0 0 35px -5px rgba(16, 185, 129, 0.35)",
+        glass: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
       },
       keyframes: {
         "accordion-down": {
@@ -118,7 +125,7 @@ const config: Config = {
           to: { opacity: "1" },
         },
         "fade-up": {
-          from: { opacity: "0", transform: "translateY(12px)" },
+          from: { opacity: "0", transform: "translateY(16px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "scale-in": {
@@ -129,14 +136,29 @@ const config: Config = {
           from: { opacity: "0", transform: "translateX(-16px)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
+        pulseGlow: {
+          "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
+          "50%": { opacity: "0.8", transform: "scale(1.05)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.4s ease-out",
-        "fade-up": "fade-up 0.4s ease-out",
+        "fade-up": "fade-up 0.5s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
         "slide-right": "slide-right 0.3s ease-out",
+        "pulse-glow": "pulseGlow 4s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
+        shimmer: "shimmer 3s ease-in-out infinite",
       },
     },
   },

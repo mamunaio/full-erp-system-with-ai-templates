@@ -1,180 +1,272 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Box, AlertTriangle, TrendingUp, Warehouse, Plus,
-  ArrowRight, History, Package, Layers, BarChart3, Search,
-  Sparkles, ShoppingCart, RefreshCw
+import { 
+  Package, Warehouse, AlertTriangle, ArrowDownLeft, 
+  ArrowUpRight, RefreshCcw, Plus, Search, Filter, 
+  Sparkles, DollarSign, Layers, CheckCircle2, ShoppingCart,
+  ArrowRight, ChevronRight, Barcode, Truck
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import MovementLog from "./components/MovementLog";
 
-import AICommandBar from "@/components/dashboard/AICommandBar";
-import SmartAlerts from "@/components/dashboard/SmartAlerts";
-import KPICard from "@/components/dashboard/KPICard";
-import LowStockAlert from "@/components/dashboard/LowStockAlert";
-
-const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 24, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
-
-const inventorySuggestions = [ "Stock level analysis", "Reorder recommendations", "Warehouse capacity", "Inventory valuation" ];
-
-const inventoryAlerts = [
-  { id: "1", severity: "critical" as const, title: "Critical Stock Shortage", description: "Apple MacBook Pro M3 — only 2 units remaining.", time: "20m ago" },
-  { id: "2", severity: "warning" as const, title: "Storage Capacity Alert", description: "Main HQ warehouse at 82% capacity — plan redistribution.", time: "2h ago" },
-  { id: "3", severity: "info" as const, title: "Stock Reordered", description: "Dell UltraSharp 32\" — 50 units inbound from supplier.", time: "4h ago" },
-  { id: "4", severity: "warning" as const, title: "Expiring Inventory", description: "12 units of Server Maintenance Kit expiring in 30 days.", time: "6h ago" },
-  { id: "5", severity: "info" as const, title: "Cycle Count Complete", description: "North Hub warehouse audit completed — 99.8% accuracy.", time: "8h ago" },
+const warehouses = [
+  { id: "w1", name: "Central HQ Mega-Hub", location: "Dhaka Central Zone", capacity: 84, used: "12,600 / 15,000 m³", items: "2,450 SKUs", temp: "21°C • Ambient", status: "Optimal" },
+  { id: "w2", name: "Chittagong Port Logistics Hub", location: "Chittagong Port Terminal", capacity: 62, used: "18,600 / 30,000 m³", items: "1,280 SKUs", temp: "18°C • Chilled", status: "Active" },
+  { id: "w3", name: "Regional Transit Depot", location: "Gazipur Industrial Zone", capacity: 38, used: "3,800 / 10,000 m³", items: "550 SKUs", temp: "Ambient", status: "Available" },
 ];
 
 const lowStockItems = [
-  { id: "1", name: "Apple MacBook Pro M3", sku: "HW-MBP-001", stock: 2, min: 10 },
-  { id: "2", name: "Dell UltraSharp 32\"", sku: "HW-MON-012", stock: 5, min: 15 },
-  { id: "3", name: "Logitech MX Master 3S", sku: "HW-PER-055", stock: 8, min: 25 },
-  { id: "4", name: "Herman Miller Aeron", sku: "FUR-CHR-009", stock: 3, min: 10 },
-];
-
-const moduleCards = [
-  { href: "/inventory/products", title: "Products", description: "4,280 Total SKU", icon: Package, trend: "+124" },
-  { href: "/inventory/categories", title: "Categories", description: "18 Categories", icon: Layers, trend: "Manage" },
-  { href: "/inventory/warehouses", title: "Warehouses", description: "6 Across 3 Regions", icon: Warehouse, trend: "View" },
-  { href: "/inventory/movements", title: "Movements", description: "Real-time Logs", icon: History, trend: "Track" },
+  { id: "ls1", name: "Apple MacBook Pro 16\" M3 Max", sku: "HW-MBP-001", stock: 2, min: 10, supplier: "Apple Authorized Dist.", cost: "$2,850", reorderQty: 15 },
+  { id: "ls2", name: "Dell UltraSharp 32\" 4K Monitor", sku: "HW-MON-012", stock: 5, min: 15, supplier: "Dell Commercial Supply", cost: "$680", reorderQty: 20 },
+  { id: "ls3", name: "Logitech MX Master 3S Wireless", sku: "HW-PER-055", stock: 8, min: 25, supplier: "Logitech Global Direct", cost: "$85", reorderQty: 50 },
+  { id: "ls4", name: "Herman Miller Aeron Ergonomic Chair", sku: "FUR-CHR-009", stock: 3, min: 10, supplier: "Herman Miller Office Tech", cost: "$1,150", reorderQty: 12 },
 ];
 
 export default function InventoryDashboard() {
-  const [loading, setLoading] = useState(true);
+  const [orderedItems, setOrderedItems] = useState<string[]>([]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
-          <div className="relative w-10 h-10">
-            <div className="absolute inset-0 rounded-xl border-2 border-gold-500/20" />
-            <div className="absolute inset-0 rounded-xl border-2 border-transparent border-t-gold-500 animate-spin" />
-            <div className="absolute inset-1 rounded-lg bg-gold-500/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-gold-400 animate-pulse" />
-            </div>
-          </div>
-          <span className="text-sm text-muted-foreground font-medium">Loading Inventory...</span>
-        </motion.div>
-      </div>
-    );
-  }
+  const handleReorder = (item: typeof lowStockItems[0]) => {
+    setOrderedItems((prev) => [...prev, item.id]);
+    toast.success(`Purchase Order generated for ${item.reorderQty} units of ${item.name}! Sent to ${item.supplier}.`);
+  };
 
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-8 max-w-[1600px] mx-auto">
-      <motion.div variants={fadeUp}>
-        <div className="bg-card/40 backdrop-blur-2xl rounded-2xl border border-border p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gold-500/5 blur-[80px] pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-gold-500/5 blur-[60px] pointer-events-none" />
+    <div className="space-y-6 pb-12 max-w-[1600px] mx-auto">
+      {/* Top Banner: Inventory Valuation & Capacity Metrics */}
+      <div className="glass-strong rounded-3xl p-5 sm:p-7 border border-border/80 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Inventory Online</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight font-heading">
-                Inventory <span className="text-gold-400">Control</span>
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Precision stock management and supply chain visibility.
-              </p>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-ping" />
+              <span className="text-[11px] font-extrabold text-purple-500 dark:text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20">
+                Asset & Warehouse Logistics
+              </span>
             </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold font-heading text-foreground">
+              Inventory & <span className="gold-text">Supply Matrix</span>
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-xl">
+              Multi-warehouse capacity tracking, automated low-stock replenishment, and real-time movement auditing.
+            </p>
+          </div>
 
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="rounded-[20px] h-14 px-8 border-border bg-card/60 font-bold">
-                Generate Report
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/inventory/products">
+              <Button variant="outline" className="rounded-2xl h-11 sm:h-12 px-5 border-border bg-card/60 font-bold text-xs sm:text-sm hover:bg-accent">
+                <Package className="w-4 h-4 mr-2 text-gold-500" /> SKU Catalog (4,280)
               </Button>
-              <Link href="/inventory/products/new">
-                <Button className="bg-gold-500 hover:bg-gold-600 text-obsidian-900 rounded-[20px] h-14 px-10 shadow-lg shadow-gold-500/20 font-bold uppercase tracking-tight transition-all active:scale-95">
-                  <Plus className="w-5 h-5 mr-3" /> Add Product
-                </Button>
-              </Link>
-            </div>
+            </Link>
+            <Link href="/inventory/products/new">
+              <Button className="gold-gradient text-obsidian-900 font-extrabold text-xs sm:text-sm rounded-2xl h-11 sm:h-12 px-6 shadow-lg shadow-gold-500/20 hover:opacity-90">
+                <Plus className="w-4 h-4 mr-1.5" /> Register New SKU
+              </Button>
+            </Link>
           </div>
         </div>
-      </motion.div>
 
-      <motion.div variants={fadeUp}>
-        <AICommandBar suggestions={inventorySuggestions} />
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard title="Total SKU" value="4,280" change="+124" trend="up" icon={Box} sparkline={[3800, 3900, 4000, 4100, 4180, 4220, 4280]} />
-          <KPICard title="Low Stock Items" value="12" change="+3" trend="up" icon={AlertTriangle} sparkline={[8, 9, 10, 10, 11, 11, 12]} />
-          <KPICard title="Warehouses" value="6" change="+1" trend="up" icon={Warehouse} sparkline={[4, 4, 5, 5, 5, 6, 6]} />
-          <KPICard title="Stock Value" value="$1.8M" change="+5.2%" trend="up" icon={TrendingUp} sparkline={[1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]} />
-        </div>
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 [&>*]:break-inside-avoid [&>*]:mb-4">
-          <div>
-            <LowStockAlert data={lowStockItems} />
-          </div>
-          <div>
-            <SmartAlerts data={inventoryAlerts} />
-          </div>
-          <div className="space-y-4">
-            <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-              <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Recent Movements</h3>
-              <div className="space-y-1">
-                <MovementRow name="Apple MacBook Pro M3" sku="HW-MBP-001" warehouse="Main HQ" qty="+25" status="Inward" />
-                <MovementRow name="Dell UltraSharp 32in" sku="HW-MON-012" warehouse="North Hub" qty="-10" status="Outward" />
-                <MovementRow name="Logitech MX Master 3S" sku="HW-PER-055" warehouse="South Depot" qty="+100" status="Inward" />
-                <MovementRow name="Herman Miller Aeron" sku="FUR-CHR-009" warehouse="Main HQ" qty="-2" status="Outward" />
-              </div>
-              <Link href="/inventory/movements">
-                <Button variant="ghost" className="w-full mt-3 text-[10px] font-bold text-gold-400 uppercase tracking-widest">View All Movements</Button>
-              </Link>
+        {/* Valuation & Logistics Metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 mt-6 border-t border-border/50">
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Total Stock Valuation</span>
+              <DollarSign className="w-3.5 h-3.5 text-gold-500" />
             </div>
-
-            <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-              <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Quick Navigation</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {moduleCards.map((mod) => (
-                  <Link key={mod.href} href={mod.href}>
-                    <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-gold-500/5 hover:bg-gold-500/10 border border-transparent hover:border-gold-500/20 transition-all group">
-                      <div className="w-10 h-10 rounded-xl bg-gold-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                        <mod.icon className="w-5 h-5 text-gold-400" />
-                      </div>
-                      <span className="text-[10px] font-bold text-card-foreground uppercase tracking-widest group-hover:text-gold-400 transition-colors">{mod.title}</span>
-                      <span className="text-[8px] text-muted-foreground mt-0.5">{mod.description}</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <div className="text-2xl font-extrabold text-foreground font-heading">$1,840,500</div>
           </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
 
-function MovementRow({ name, sku, warehouse, qty, status }: any) {
-  const isInward = status === "Inward";
-  return (
-    <div className="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-gold-500/5 transition-all cursor-pointer group">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-8 h-8 rounded-lg bg-gold-500/10 flex items-center justify-center text-gold-400 text-xs font-bold shrink-0">{name[0]}</div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-card-foreground group-hover:text-gold-400 transition-colors truncate">{name}</p>
-          <p className="text-[10px] text-muted-foreground">SKU: {sku} &middot; {warehouse}</p>
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Low-Stock Alerts</span>
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-amber-500 font-heading">4 SKUs <span className="text-xs text-muted-foreground font-sans font-medium">Need PO</span></div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Active Warehouses</span>
+              <Warehouse className="w-3.5 h-3.5 text-purple-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-foreground font-heading">3 Hubs</div>
+          </div>
+
+          <div className="bg-card/50 p-4 rounded-2xl border border-border">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+              <span>Stock Turnover Ratio</span>
+              <RefreshCcw className="w-3.5 h-3.5 text-emerald-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-emerald-500 font-heading">8.4x <span className="text-xs text-muted-foreground font-sans font-medium">Yearly</span></div>
+          </div>
         </div>
       </div>
-      <div className="text-right shrink-0">
-        <p className={cn("text-sm font-bold", isInward ? "text-emerald-400" : "text-rose-400")}>{qty}</p>
-        <span className={cn("text-[9px] font-bold uppercase tracking-widest", isInward ? "text-emerald-400" : "text-rose-400")}>{status}</span>
+
+      {/* Main Section 1: Warehouse Spatial Capacity Heatmap */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">Warehouse Spatial Utilization</h3>
+            <p className="text-xs text-muted-foreground">Real-time volumetric capacity and bin storage allocation</p>
+          </div>
+          <Link href="/inventory/warehouses">
+            <Button variant="ghost" size="sm" className="text-xs font-semibold text-gold-500 hover:text-gold-400">
+              Manage Hubs <ChevronRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {warehouses.map((wh) => (
+            <div key={wh.id} className="glass rounded-3xl p-5 border border-border/80 shadow-lg space-y-4 relative overflow-hidden group hover:border-gold-500/30 transition-all">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-foreground group-hover:text-gold-500 transition-colors">{wh.name}</h4>
+                  <p className="text-[11px] text-muted-foreground">{wh.location}</p>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-foreground">
+                  {wh.items}
+                </span>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className="text-muted-foreground font-medium">Storage Volume</span>
+                  <span className="font-extrabold text-foreground">{wh.capacity}%</span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-accent overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      wh.capacity > 80 ? "bg-amber-500" : wh.capacity > 50 ? "bg-emerald-500" : "bg-blue-500"
+                    }`}
+                    style={{ width: `${wh.capacity}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1.5">
+                  <span>{wh.used}</span>
+                  <span className="text-emerald-500 font-semibold">{wh.temp}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Section 2: Critical Stock Table with 1-Click PO + Movement Stream */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Cols: Critical Low-Stock Replenishment */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground font-heading">Critical Stock Replenishment</h3>
+                  <p className="text-xs text-muted-foreground">SKUs approaching or below safe buffer threshold</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                Action Required
+              </span>
+            </div>
+
+            <div className="divide-y divide-border/50 pt-1">
+              {lowStockItems.map((item) => {
+                const isOrdered = orderedItems.includes(item.id);
+
+                return (
+                  <div key={item.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground">{item.name}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground bg-accent px-1.5 py-0.2 rounded">{item.sku}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Supplier: {item.supplier}</p>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs justify-between sm:justify-end">
+                      <div className="text-right">
+                        <div className="text-sm font-extrabold text-amber-500">{item.stock} in stock</div>
+                        <div className="text-[10px] text-muted-foreground">Min buffer: {item.min}</div>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        disabled={isOrdered}
+                        onClick={() => handleReorder(item)}
+                        className={`rounded-xl text-xs font-bold ${
+                          isOrdered
+                            ? "bg-emerald-500/15 text-emerald-500 border border-emerald-500/30"
+                            : "gold-gradient text-obsidian-900 hover:opacity-90 shadow-sm"
+                        }`}
+                      >
+                        {isOrdered ? (
+                          <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> PO Sent</span>
+                        ) : (
+                          <span className="flex items-center gap-1"><ShoppingCart className="w-3.5 h-3.5" /> 1-Click PO ({item.reorderQty})</span>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Real-time Movement Log Stream */}
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-base font-bold text-foreground font-heading">Real-Time Stock Movement Audit</h3>
+              <p className="text-xs text-muted-foreground">Inbound GRNs, outbound customer deliveries, and internal transfers</p>
+            </div>
+            <MovementLog />
+          </div>
+        </div>
+
+        {/* Right 1 Col: Quick Logistics Tools & Categories */}
+        <div className="space-y-6">
+          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
+            <h4 className="text-sm font-bold text-foreground font-heading">Quick Logistics Tools</h4>
+            
+            <div className="space-y-2">
+              <Link href="/inventory/stock" className="block">
+                <div className="p-3 rounded-2xl bg-card/60 hover:bg-card border border-border hover:border-gold-500/30 transition-all flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-gold-500/10 text-gold-500 flex items-center justify-center">
+                      <Barcode className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-foreground">Barcode Audit</div>
+                      <div className="text-[10px] text-muted-foreground">Scan & verify physical stock</div>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-gold-500 transition-colors" />
+                </div>
+              </Link>
+
+              <Link href="/procurement" className="block">
+                <div className="p-3 rounded-2xl bg-card/60 hover:bg-card border border-border hover:border-gold-500/30 transition-all flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                      <Truck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-foreground">Supplier Inbound Shipments</div>
+                      <div className="text-[10px] text-muted-foreground">3 POs expected this week</div>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-blue-500 transition-colors" />
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

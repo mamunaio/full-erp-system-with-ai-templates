@@ -15,7 +15,7 @@ export default function LoginPage() {
   if (!mounted) return null;
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-obsidian-900 px-6 py-20 selection:bg-gold-500/30">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-obsidian-950 px-4 sm:px-6 py-12 sm:py-20 selection:bg-gold-500/30">
       {/* Cinematic Background Elements */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] rounded-full bg-gold-500/10 blur-[150px] animate-pulse" />
@@ -23,23 +23,23 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none bg-grid" />
       </div>
 
-      <div className="relative z-10 w-full max-w-lg animate-in fade-in zoom-in duration-1000">
-        <div className="flex flex-col items-center text-center space-y-6 mb-12">
-          <div className="w-20 h-20 rounded-2xl gold-gradient flex items-center justify-center shadow-2xl shadow-gold-500/30 relative group">
+      <div className="relative z-10 w-full max-w-lg animate-in fade-in zoom-in duration-700">
+        <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 mb-8 sm:mb-12">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl gold-gradient flex items-center justify-center shadow-2xl shadow-gold-500/30 relative group">
             <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Lock className="w-10 h-10 text-obsidian-900" />
+            <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-obsidian-900" />
           </div>
-          <div className="space-y-2">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground leading-none font-heading">
+          <div className="space-y-1.5 sm:space-y-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-none font-heading">
               Injaazh <span className="gold-text">Secure</span>
             </h1>
-            <p className="text-muted-foreground text-sm font-medium uppercase tracking-[0.15em]">
+            <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em]">
               Authorized Access Only
             </p>
           </div>
         </div>
         
-        <div className="glass-strong p-10 rounded-2xl shadow-2xl relative overflow-hidden group">
+        <div className="glass-strong p-6 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden group border border-border/60">
            <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 rounded-full blur-3xl pointer-events-none" />
            <LoginForm />
         </div>
