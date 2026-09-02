@@ -16,6 +16,7 @@ import KPICard from "@/components/dashboard/KPICard";
 import RevenueChart from "@/components/dashboard/RevenueChart";
 import QuickActions from "@/components/dashboard/QuickActions";
 import TaskWidget from "@/components/dashboard/TaskWidget";
+import TreasuryMiniCard from "@/components/dashboard/TreasuryMiniCard";
 
 const stagger = { 
   hidden: { opacity: 0 }, 
@@ -193,10 +194,11 @@ export default function DashboardPage() {
           <SmartAlerts />
         </div>
 
-        {/* Right 1 Col: Quick Actions & Live Tasks */}
+        {/* Right 1 Col: Quick Actions, Live Tasks & Treasury Reserves */}
         <div className="space-y-6">
           <QuickActions data={quickActionsData} />
           <TaskWidget data={tasks} />
+          <TreasuryMiniCard />
         </div>
       </motion.div>
     </motion.div>

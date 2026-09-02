@@ -102,25 +102,30 @@ export default function AICopilotOverlay() {
   return (
     <>
       {/* Floating Tactical Orb Button */}
-      <motion.div 
-        className="fixed bottom-6 right-6 z-40"
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="relative group p-3.5 rounded-2xl gold-gradient shadow-xl shadow-gold-500/30 flex items-center gap-2.5 text-obsidian-900 font-extrabold text-xs transition-all hover:shadow-gold-500/50"
+      {!isOpen && (
+        <motion.div 
+          className="fixed bottom-6 right-6 z-40"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <div className="relative">
-            <Sparkles className="w-5 h-5 text-obsidian-900" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white animate-ping" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
-          </div>
-          <span className="hidden sm:inline-block pr-1 font-heading text-sm tracking-wide">
-            AI Copilot
-          </span>
-        </button>
-      </motion.div>
+          <button 
+            onClick={() => setIsOpen(true)}
+            className="relative group p-3.5 rounded-2xl gold-gradient shadow-xl shadow-gold-500/30 flex items-center gap-2.5 text-obsidian-900 font-extrabold text-xs transition-all hover:shadow-gold-500/50"
+          >
+            <div className="relative">
+              <Sparkles className="w-5 h-5 text-obsidian-900" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white animate-ping" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+            </div>
+            <span className="hidden sm:inline-block pr-1 font-heading text-sm tracking-wide">
+              AI Copilot
+            </span>
+          </button>
+        </motion.div>
+      )}
 
       {/* Floating Neural Chat Drawer */}
       <AnimatePresence>

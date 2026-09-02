@@ -121,6 +121,7 @@ export default function Sidebar() {
                 <Link 
                   key={item.href} 
                   href={item.href}
+                  title={isSidebarCollapsed ? item.label : undefined}
                   className="relative block"
                 >
                   {isActive && (
@@ -133,6 +134,7 @@ export default function Sidebar() {
                   <div
                     className={cn(
                       "group flex items-center rounded-xl px-3 py-2.5 transition-all text-sm font-medium relative",
+                      isSidebarCollapsed && "justify-center px-0",
                       isActive 
                         ? "bg-gold-500/15 text-gold-600 dark:text-gold-300 font-semibold border border-gold-500/20 shadow-sm" 
                         : "hover:bg-accent/70 hover:text-foreground text-muted-foreground"
