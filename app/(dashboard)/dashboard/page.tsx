@@ -6,9 +6,12 @@ import { motion } from "framer-motion";
 import { 
   Wallet, Users, BarChart3, Package, Sparkles, 
   ArrowRight, ShieldCheck, Activity, TrendingUp,
-  HeartHandshake, ShoppingCart, Factory, Kanban
+  HeartHandshake, ShoppingCart, Factory, Kanban,
+  Plus, Calendar, Landmark, CheckCircle2, Clock
 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 import AICommandBar from "@/components/dashboard/AICommandBar";
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
@@ -43,10 +46,10 @@ const revenueData = [
 ];
 
 const tasks = [
-  { id: "1", title: "Review Q4 Fiscal Audit", priority: "HIGH", projectName: "Finance", dueDate: null, createdAt: new Date(Date.now() - 120 * 60000).toISOString() },
+  { id: "1", title: "Review Q4 Fiscal Treasury Audit", priority: "HIGH", projectName: "Finance", dueDate: null, createdAt: new Date(Date.now() - 120 * 60000).toISOString() },
   { id: "2", title: "Approve Inbound Inventory Batch", priority: "MEDIUM", projectName: "Inventory", dueDate: null, createdAt: new Date(Date.now() - 300 * 60000).toISOString() },
   { id: "3", title: "Enterprise Lead Follow-up (Meta Corp)", priority: "HIGH", projectName: "CRM", dueDate: null, createdAt: new Date(Date.now() - 1440 * 60000).toISOString() },
-  { id: "4", title: "Monthly Payroll Dispatch", priority: "MEDIUM", projectName: "HRM", dueDate: null, createdAt: new Date(Date.now() - 180 * 60000).toISOString() },
+  { id: "4", title: "Monthly Payroll Batch Dispatch", priority: "MEDIUM", projectName: "HRM", dueDate: null, createdAt: new Date(Date.now() - 180 * 60000).toISOString() },
 ];
 
 const quickActionsData = {
@@ -57,10 +60,17 @@ const quickActionsData = {
 };
 
 const quickModules = [
-  { name: "CRM Pipelines", count: "184 Deals", href: "/crm", icon: HeartHandshake, color: "text-blue-500 bg-blue-500/10" },
-  { name: "Master Ledger", count: "$1.28M", href: "/finance", icon: Wallet, color: "text-emerald-500 bg-emerald-500/10" },
-  { name: "Human Capital", count: "156 Staff", href: "/hrm", icon: Users, color: "text-amber-500 bg-amber-500/10" },
+  { name: "CRM Pipelines", count: "42 Deals ($3.48M)", href: "/crm", icon: HeartHandshake, color: "text-blue-500 bg-blue-500/10" },
+  { name: "Master Treasury", count: "$1.24M Liquid", href: "/finance", icon: Landmark, color: "text-emerald-500 bg-emerald-500/10" },
+  { name: "Human Capital", count: "156 Staff (91%)", href: "/hrm", icon: Users, color: "text-amber-500 bg-amber-500/10" },
   { name: "Inventory Hub", count: "4,280 SKUs", href: "/inventory", icon: Package, color: "text-purple-500 bg-purple-500/10" },
+];
+
+const aiDashboardSuggestions = [
+  "Forecast Q4 revenue & EBITDA margin",
+  "Identify low-stock inventory buffer risks",
+  "Show top 3 high-probability CRM deals",
+  "Audit monthly payroll and tax deductions",
 ];
 
 export default function DashboardPage() {
@@ -68,7 +78,7 @@ export default function DashboardPage() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 300);
+    const timer = setTimeout(() => setLoading(false), 250);
     return () => clearTimeout(timer);
   }, []);
 
@@ -83,7 +93,7 @@ export default function DashboardPage() {
               <Sparkles className="w-5 h-5 text-gold-500 animate-pulse" />
             </div>
           </div>
-          <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Synchronizing ERP Matrix...</span>
+          <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Calibrating Enterprise Cockpit...</span>
         </motion.div>
       </div>
     );
@@ -98,42 +108,41 @@ export default function DashboardPage() {
     >
       {/* Welcome & Command Center Header */}
       <motion.div variants={fadeUp}>
-        <div className="glass-strong rounded-3xl p-4 sm:p-6 md:p-8 relative overflow-hidden border border-border/80 shadow-xl">
-          <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-gold-500/10 blur-[90px] pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none" />
+        <div className="glass-strong rounded-3xl p-5 sm:p-7 md:p-8 relative overflow-hidden border border-border/80 shadow-xl">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-60 h-60 bg-emerald-500/5 blur-[80px] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 -ml-4.5" />
-                <span className="text-[10px] sm:text-[11px] font-extrabold text-emerald-500 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                  All Systems Operational
+                <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                  Tactical Command Operational
                 </span>
-                <span className="text-xs text-muted-foreground">• Multi-Tenant Active</span>
+                <span className="text-xs text-muted-foreground">• 12 Enterprise Nodes Online</span>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground tracking-tight font-heading">
-                Tactical Command Center, <span className="gold-text">{session?.user?.name?.split(" ")[0] || "Commander"}</span>
+                Enterprise Cockpit, <span className="gold-text">{session?.user?.name?.split(" ")[0] || "Commander"}</span>
               </h1>
               <p className="text-muted-foreground text-xs sm:text-sm max-w-xl leading-relaxed">
-                Real-time operational streams across all enterprise nodes are calibrated and synchronized.
+                Real-time operational telemetry across Treasury, CRM Pipelines, Workforce Rosters, and Warehouse Supply Chains.
               </p>
             </div>
 
             {/* Quick Live Modules Dispatch */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {quickModules.map((qm, i) => (
                 <Link key={i} href={qm.href} className="group">
-                  <div className="p-2.5 sm:p-3 rounded-2xl bg-card/60 hover:bg-card border border-border/60 hover:border-gold-500/40 transition-all flex flex-col justify-between h-18 sm:h-20 shadow-sm">
+                  <div className="p-3 rounded-2xl bg-card/60 hover:bg-card border border-border/60 hover:border-gold-500/40 transition-all flex flex-col justify-between h-20 shadow-sm">
                     <div className="flex items-center justify-between">
-                      <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center ${qm.color}`}>
-                        <qm.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${qm.color}`}>
+                        <qm.icon className="w-3.5 h-3.5" />
                       </div>
                       <ArrowRight className="w-3 h-3 text-muted-foreground group-hover:text-gold-500 group-hover:translate-x-0.5 transition-all" />
                     </div>
                     <div>
-                      <div className="text-[10px] sm:text-[11px] font-bold text-foreground truncate">{qm.name}</div>
-                      <div className="text-[8px] sm:text-[9px] text-muted-foreground font-medium">{qm.count}</div>
+                      <div className="text-[11px] font-bold text-foreground truncate group-hover:text-gold-500 transition-colors">{qm.name}</div>
+                      <div className="text-[9px] text-muted-foreground font-semibold">{qm.count}</div>
                     </div>
                   </div>
                 </Link>
@@ -143,16 +152,16 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* AI Pulse Command Bar */}
+      {/* AI Pulse Command Launcher */}
       <motion.div variants={fadeUp}>
-        <AICommandBar />
+        <AICommandBar suggestions={aiDashboardSuggestions} />
       </motion.div>
 
       {/* Primary KPI Matrix */}
       <motion.div variants={fadeUp}>
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard 
-            title="Total Revenue (YTD)" 
+            title="Consolidated Revenue (YTD)" 
             value="$1,248,500" 
             change="+14.2%" 
             trend="up" 
@@ -160,41 +169,41 @@ export default function DashboardPage() {
             sparkline={[40, 55, 45, 70, 60, 80, 95]} 
           />
           <KPICard 
-            title="Active Workforce" 
-            value="156 Staff" 
-            change="+4.8%" 
+            title="Master Liquid Treasury" 
+            value="$1,240,500" 
+            change="+8.4%" 
+            trend="up" 
+            icon={Landmark} 
+            sparkline={[850, 920, 980, 1050, 1100, 1180, 1240]} 
+          />
+          <KPICard 
+            title="Active Deal Pipeline" 
+            value="$3,480,000" 
+            change="+22.5%" 
+            trend="up" 
+            icon={HeartHandshake} 
+            sparkline={[1.8, 2.1, 2.4, 2.8, 3.1, 3.3, 3.48]} 
+          />
+          <KPICard 
+            title="Staffing Capacity Index" 
+            value="91.0%" 
+            change="+2.1%" 
             trend="up" 
             icon={Users} 
-            sparkline={[60, 65, 58, 72, 80, 75, 84]} 
-          />
-          <KPICard 
-            title="System Efficiency" 
-            value="99.8%" 
-            change="+0.6%" 
-            trend="up" 
-            icon={BarChart3} 
-            sparkline={[95, 97, 96, 98, 97, 99, 99]} 
-          />
-          <KPICard 
-            title="Managed Inventory SKUs" 
-            value="4,280" 
-            change="+12" 
-            trend="up" 
-            icon={Package} 
-            sparkline={[30, 35, 40, 38, 45, 50, 55]} 
+            sparkline={[85, 87, 88, 89, 90, 90, 91]} 
           />
         </div>
       </motion.div>
 
       {/* Core Operational Analytics & Insights */}
       <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Revenue & Fiscal Chart */}
+        {/* Left 2 Cols: Revenue & Fiscal Chart + Smart Alerts */}
         <div className="lg:col-span-2 space-y-6">
           <RevenueChart data={revenueData} />
           <SmartAlerts />
         </div>
 
-        {/* Right 1 Col: Quick Actions, Live Tasks & Treasury Reserves */}
+        {/* Right 1 Col: Quick Actions, Action Queue & Treasury Reserves */}
         <div className="space-y-6">
           <QuickActions data={quickActionsData} />
           <TaskWidget data={tasks} />

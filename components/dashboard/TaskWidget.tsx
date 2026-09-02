@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, ChevronRight, CheckCircle } from "lucide-react";
+import { Clock, ChevronRight, CheckCircle, ListTodo } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -25,59 +25,67 @@ function timeAgo(date: string) {
   return `${diffD}d ago`;
 }
 
-const priorityConfig: Record<string, string> = {
-  URGENT: "bg-gold-500 ring-gold-500/30",
-  HIGH: "bg-amber-500 ring-amber-500/30",
-  MEDIUM: "bg-blue-500 ring-blue-500/30",
-  LOW: "bg-zinc-400 ring-zinc-400/30",
+const priorityConfig: Record<string, { bg: string; text: string }> = {
+  URGENT: { bg: "bg-rose-500/10 border-rose-500/30", text: "text-rose-600 dark:text-rose-400" },
+  HIGH: { bg: "bg-amber-500/10 border-amber-500/30", text: "text-amber-600 dark:text-amber-400" },
+  MEDIUM: { bg: "bg-blue-500/10 border-blue-500/30", text: "text-blue-600 dark:text-blue-400" },
+  LOW: { bg: "bg-accent border-border", text: "text-muted-foreground" },
 };
 
 export default function TaskWidget({ data }: { data: TaskItem[] }) {
   if (data.length === 0) {
     return (
-      <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-        <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Active Tasks</h3>
-        <div className="flex flex-col items-center justify-center py-4 text-center">
-          <CheckCircle className="w-6 h-6 text-gold-400 mb-1" />
-          <p className="text-sm text-muted-foreground font-medium">All tasks completed</p>
+      <div className="glass rounded-2xl border border-border/80 p-5 shadow-md">
+        <h3 className="text-sm font-bold text-foreground font-heading mb-4">Pending Approvals & Tasks</h3>
+        <div className="flex flex-col items-center justify-center py-6 text-center space-y-2">
+          <CheckCircle className="w-8 h-8 text-emerald-500" />
+          <p className="text-xs font-semibold text-muted-foreground">All enterprise tasks completed</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-white/5 p-5 hover:border-gold-500/20 transition-all duration-300">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-card-foreground font-heading">Active Tasks</h3>
+    <div className="glass rounded-2xl border border-border/80 p-5 shadow-md space-y-4 hover:border-gold-500/30 transition-all duration-300">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-full font-bold">{data.length}</span>
-          <Link href="/projects" className="text-[11px] text-gold-400 hover:text-gold-300 font-semibold transition-colors flex items-center gap-1">
-            View all <ChevronRight className="w-3 h-3" />
-          </Link>
+          <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+            <ListTodo className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-foreground font-heading">Action Queue</h3>
+            <p className="text-[10px] text-muted-foreground">{data.length} pending execution items</p>
+          </div>
         </div>
+        <Link href="/projects" className="text-[11px] font-bold text-gold-600 dark:text-gold-400 hover:text-foreground transition-colors flex items-center gap-0.5">
+          Projects <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
 
-      <div className="space-y-1">
-        {data.slice(0, 4).map((task) => (
-          <div key={task.id} className="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-gold-500/5 transition-all duration-200 cursor-pointer group">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className={cn(
-                "w-2.5 h-2.5 rounded-full ring-2 ring-offset-1 ring-offset-card shrink-0",
-                priorityConfig[task.priority] || priorityConfig.MEDIUM
-              )} />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-card-foreground group-hover:text-gold-400 transition-colors truncate">{task.title}</p>
-                {task.projectName && (
-                  <p className="text-[10px] text-muted-foreground truncate">{task.projectName}</p>
-                )}
+      <div className="space-y-2 pt-1">
+        {data.slice(0, 4).map((task) => {
+          const cfg = priorityConfig[task.priority] || priorityConfig.MEDIUM;
+
+          return (
+            <div key={task.id} className="p-3 rounded-xl bg-card/60 hover:bg-card border border-border/60 hover:border-gold-500/30 transition-all cursor-pointer group space-y-1 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs font-bold text-foreground group-hover:text-gold-500 transition-colors leading-snug line-clamp-1">
+                  {task.title}
+                </p>
+                <span className={cn("text-[9px] font-extrabold px-2 py-0.2 rounded-full border uppercase tracking-wider shrink-0", cfg.bg, cfg.text)}>
+                  {task.priority}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+                <span className="font-semibold text-foreground/80">{task.projectName}</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> {timeAgo(task.createdAt)}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground shrink-0">
-              <Clock className="w-3 h-3" />
-              <span className="text-[10px]">{timeAgo(task.createdAt)}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
