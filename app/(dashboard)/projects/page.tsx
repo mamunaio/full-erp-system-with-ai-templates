@@ -1,237 +1,216 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Plus, Search, Filter, Users, Calendar, Briefcase,
-  ArrowLeft, X, Loader2, TrendingUp, CheckCircle2, Clock, Target,
-  Sparkles, MoreHorizontal
+  Briefcase, Users, Calendar, Target, TrendingUp,
+  Plus, Search, Filter, CheckCircle2, Clock, AlertTriangle,
+  FileSpreadsheet, ArrowRight, ChevronRight, Sparkles,
+  Layers, ShieldCheck, Activity, FolderKanban
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import TaskKanban from "./components/TaskKanban";
 
-import AICommandBar from "@/components/dashboard/AICommandBar";
-import SmartAlerts from "@/components/dashboard/SmartAlerts";
-import KPICard from "@/components/dashboard/KPICard";
-import TaskWidget from "@/components/dashboard/TaskWidget";
-
-const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 24, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
-
-const projectSuggestions = [ "Project timeline status", "Budget utilization", "Resource allocation", "Risk assessment" ];
-
-const projectAlerts = [
-  { id: "1", severity: "critical" as const, title: "Project Delay Risk", description: "NexGen E-Commerce 2 weeks behind schedule — resource gap detected.", time: "1h ago" },
-  { id: "2", severity: "warning" as const, title: "Budget Overrun", description: "Global ERP Rollout 15% over budget at current burn rate.", time: "3h ago" },
-  { id: "3", severity: "info" as const, title: "Milestone Completed", description: "Brand Identity 2026 — all deliverables approved by client.", time: "5h ago" },
-  { id: "4", severity: "warning" as const, title: "Resource Conflict", description: "2 projects competing for same senior developer resource.", time: "7h ago" },
-  { id: "5", severity: "info" as const, title: "New Project Approved", description: "Smart Factory Automation project greenlit for Q4.", time: "10h ago" },
+const projectMetrics = [
+  { label: "Active Project Portfolio", value: "12 Programs", change: "88.4% On-Track", sub: "3 Releasing this Month" },
+  { label: "Total Allocated Budget", value: "$1,850,000", change: "67% Burn", sub: "$1.24M Utilized to Date" },
+  { label: "Active Sprint Tasks", value: "148 Items", change: "Sprint 34", sub: "42 Story Points / Week" },
+  { label: "Engineering Velocity", value: "96.2%", change: "+4.1%", sub: "SLA Commitment Fulfilled" },
 ];
 
-const tasks = [
-  { id: "1", title: "Approve Q2 Financials", priority: "HIGH", projectName: "NexGen E-Commerce", dueDate: null, createdAt: new Date(Date.now() - 120 * 60000).toISOString() },
-  { id: "2", title: "API Documentation Update", priority: "MEDIUM", projectName: "Global ERP Rollout", dueDate: null, createdAt: new Date(Date.now() - 300 * 60000).toISOString() },
-  { id: "3", title: "Client Presentation Prep", priority: "HIGH", projectName: "Brand Identity 2026", dueDate: null, createdAt: new Date(Date.now() - 600 * 60000).toISOString() },
-  { id: "4", title: "Code Review Sprint", priority: "MEDIUM", projectName: "Smart Factory", dueDate: null, createdAt: new Date(Date.now() - 1440 * 60000).toISOString() },
+const portfolioProjects = [
+  { id: "P1", name: "NexGen Cloud ERP 2.0 Core", client: "Internal Core Platform", budget: "$450,000", spent: "$350,000", progress: 78, lead: "Farhan Ahmed", team: 12, status: "ON_TRACK", deadline: "Oct 15, 2026" },
+  { id: "P2", name: "Meta Multi-Tenant Connect & SSO", client: "Meta Corp Systems", budget: "$280,000", spent: "$258,000", progress: 92, lead: "Nusrat Jahan", team: 8, status: "FINAL_REVIEW", deadline: "Sep 20, 2026" },
+  { id: "P3", name: "Tesla Energy IoT Telemetry Ingestion", client: "Tesla Energy", budget: "$320,000", spent: "$204,000", progress: 64, lead: "Zubair Rahman", team: 10, status: "ON_TRACK", deadline: "Nov 05, 2026" },
+  { id: "P4", name: "SpaceX Ground Logistics Control Node", client: "SpaceX Aerospace", budget: "$500,000", spent: "$225,000", progress: 45, lead: "Ayesha Siddiqua", team: 14, status: "IN_PROGRESS", deadline: "Dec 12, 2026" },
+];
+
+const squadWorkloads = [
+  { squad: "Squad Alpha (Core Engine & Distributed API)", load: 94, members: "8 Engineers", focus: "Multi-tenant isolation & ledger speed", status: "High Load" },
+  { squad: "Squad Beta (Cloud Infrastructure & DevOps)", load: 88, members: "6 Engineers", focus: "Kubernetes clustering & Redis caches", status: "Optimal" },
+  { squad: "Squad Gamma (UI & Design Systems)", load: 76, members: "5 Designers", focus: "Cyber-Luxe themes & Kanban polish", status: "Available" },
+  { squad: "Squad Delta (QA, SecOps & Compliance)", load: 91, members: "6 Engineers", focus: "Automated penetration testing & SOC2", status: "High Load" },
 ];
 
 export default function ProjectsPage() {
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleCreateProject = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleExport = () => {
+    setIsExporting(true);
     setTimeout(() => {
-      setIsSubmitting(false);
-      setIsModalOpen(false);
-      toast.success("New Project Initialized!", {
-        description: "Assigned to Strategy Team Alpha.",
-      });
-    }, 1500);
+      setIsExporting(false);
+      toast.success("Project Portfolio Roadmap & Sprint Metrics exported to CSV/PDF!");
+    }, 1100);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
-          <div className="relative w-10 h-10">
-            <div className="absolute inset-0 rounded-xl border-2 border-gold-500/20" />
-            <div className="absolute inset-0 rounded-xl border-2 border-transparent border-t-gold-500 animate-spin" />
-            <div className="absolute inset-1 rounded-lg bg-gold-500/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-gold-400 animate-pulse" />
-            </div>
-          </div>
-          <span className="text-sm text-muted-foreground font-medium">Loading Projects...</span>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-8 max-w-[1600px] mx-auto">
-      <motion.div variants={fadeUp}>
-        <div className="bg-card/40 backdrop-blur-2xl rounded-2xl border border-border p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-gold-500/5 blur-[80px] pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-gold-500/5 blur-[60px] pointer-events-none" />
+    <div className="space-y-6 pb-12 max-w-[1600px] mx-auto">
+      {/* Top Banner: Project Portfolio Command */}
+      <div className="glass-strong rounded-3xl p-5 sm:p-7 border border-border/80 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Projects Online</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight font-heading">
-                Project <span className="text-gold-400">Management</span>
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Track budgets, tasks, and team productivity across all active projects.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-gold-500 hover:bg-gold-600 text-obsidian-900 rounded-[20px] h-14 px-10 shadow-lg shadow-gold-500/20 font-bold uppercase tracking-tight transition-all active:scale-95"
-              >
-                <Plus className="w-5 h-5 mr-3" /> Start New Project
-              </Button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <AICommandBar suggestions={projectSuggestions} />
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard title="Total Projects" value="24" change="+3" trend="up" icon={Briefcase} sparkline={[16, 18, 19, 20, 21, 23, 24]} />
-          <KPICard title="Active Tasks" value="142" change="+12" trend="up" icon={CheckCircle2} sparkline={[95, 105, 115, 120, 130, 138, 142]} />
-          <KPICard title="Budget Utilization" value="68%" change="+5%" trend="up" icon={TrendingUp} sparkline={[55, 58, 60, 62, 65, 66, 68]} />
-          <KPICard title="Overdue Tasks" value="8" change="-2" trend="down" icon={Clock} sparkline={[12, 11, 11, 10, 9, 9, 8]} />
-        </div>
-      </motion.div>
-
-      <motion.div variants={fadeUp}>
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 [&>*]:break-inside-avoid [&>*]:mb-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
-            <TaskWidget data={tasks} />
-          </div>
-          <div>
-            <SmartAlerts data={projectAlerts} />
-          </div>
-          <div className="space-y-4">
-            <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-              <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Active Projects</h3>
-              <div className="space-y-3">
-                <ProjectCard index={1} title="NexGen E-Commerce" client="Meta Corp Inc." status="ACTIVE" progress={65} />
-                <ProjectCard index={2} title="Global ERP Rollout" client="Tesla Cloud" status="PLANNING" progress={0} />
-                <ProjectCard index={3} title="Brand Identity 2026" client="SpaceX Systems" status="COMPLETED" progress={100} />
-              </div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                Sprint 34 Active • Portfolio Synchronized
+              </span>
             </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold font-heading text-foreground">
+              Project Portfolio & <span className="gold-text">Engineering Command</span>
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-xl">
+              Track multi-squad deliverables, story point velocity, cross-department milestone timelines, and portfolio budgets.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={handleExport}
+              disabled={isExporting}
+              variant="outline"
+              className="rounded-2xl h-11 sm:h-12 px-4 border-border bg-card/60 font-bold text-xs hover:bg-accent"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-1.5 text-blue-500" />
+              <span>{isExporting ? "Exporting..." : "Export Portfolio"}</span>
+            </Button>
+            <Link href="/projects/new">
+              <Button className="gold-gradient text-obsidian-900 font-extrabold text-xs sm:text-sm rounded-2xl h-11 sm:h-12 px-6 shadow-lg shadow-gold-500/20 hover:opacity-90">
+                <Plus className="w-4 h-4 mr-1.5" /> Initialize New Project
+              </Button>
+            </Link>
           </div>
         </div>
-      </motion.div>
 
-      {/* New Project Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-[40px] shadow-2xl">
-          <div className="bg-obsidian-900 p-10 text-white relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="flex items-center justify-between mb-8 relative z-10">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-2xl bg-gold-500 flex items-center justify-center font-black text-2xl shadow-lg shadow-gold-500/20 text-obsidian-900">P</div>
-                <div>
-                  <h2 className="text-3xl font-black tracking-tight">Start New Project</h2>
-                  <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Initialize Project Lifecycle</p>
-                </div>
+        {/* Project Metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 mt-6 border-t border-border/50">
+          {projectMetrics.map((m, idx) => (
+            <div key={idx} className="bg-card/50 p-4 rounded-2xl border border-border space-y-1">
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
+                <span>{m.label}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{m.change}</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="rounded-full text-muted-foreground hover:text-white hover:bg-white/10">
-                <X className="w-5 h-5" />
-              </Button>
+              <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading tabular-nums">
+                {m.value}
+              </div>
+              <p className="text-[10px] text-muted-foreground">{m.sub}</p>
             </div>
+          ))}
+        </div>
+      </div>
 
-            <form onSubmit={handleCreateProject} className="space-y-6 relative z-10">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Project Name</Label>
-                  <Input required placeholder="e.g. Injaazh Mobile App" className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-gold-500 focus:border-gold-500 text-white font-medium px-5" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Client Name</Label>
-                  <Input required placeholder="Search client..." className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-gold-500 focus:border-gold-500 text-white font-medium px-5" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Project Manager</Label>
-                  <Input required placeholder="Assign manager..." className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-gold-500 focus:border-gold-500 text-white font-medium px-5" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Target Deadline</Label>
-                  <Input required type="date" className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-gold-500 focus:border-gold-500 text-white font-medium px-5" />
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full h-16 rounded-[24px] bg-gold-500 hover:bg-gold-600 text-obsidian-900 font-black shadow-2xl shadow-gold-500/40 text-lg tracking-tight active:scale-[0.98] transition-all"
-                >
-                  {isSubmitting ? (
-                    <><Loader2 className="w-6 h-6 mr-3 animate-spin" /> SYNCHRONIZING...</>
-                  ) : (
-                    "INITIALIZE PROJECT ECOSYSTEM"
-                  )}
-                </Button>
-              </div>
-            </form>
+      {/* Strategic Project Health Cards */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">
+              Active Enterprise Programs & Budget Utilization
+            </h3>
+            <p className="text-xs text-muted-foreground">High-impact multi-tenant engineering contracts & milestones</p>
           </div>
-        </DialogContent>
-      </Dialog>
-    </motion.div>
-  );
-}
+        </div>
 
-function ProjectCard({ index, title, client, status, progress }: any) {
-  return (
-    <div className="p-4 rounded-xl bg-gold-500/5 hover:bg-gold-500/10 border border-transparent hover:border-gold-500/20 transition-all group">
-      <div className="flex items-start justify-between mb-3">
-        <span className={cn(
-          "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
-          status === "ACTIVE" ? "bg-emerald-500/15 text-emerald-400" :
-          status === "PLANNING" ? "bg-blue-500/15 text-blue-400" : "text-muted-foreground bg-card/50"
-        )}>{status}</span>
-        <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {portfolioProjects.map((p) => (
+            <div key={p.id} className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-md space-y-4 hover:border-gold-500/30 transition-all">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-bold text-gold-600 dark:text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-md border border-gold-500/20">
+                      {p.id}
+                    </span>
+                    <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-wider ${
+                      p.status === "FINAL_REVIEW" ? "bg-purple-500/10 text-purple-500 border-purple-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    }`}>
+                      {p.status.replace("_", " ")}
+                    </span>
+                  </div>
+                  <h4 className="text-base font-bold text-foreground font-heading pt-1">{p.name}</h4>
+                  <p className="text-xs text-muted-foreground">Client: <strong className="text-foreground">{p.client}</strong></p>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-lg font-extrabold gold-text font-heading">{p.budget}</div>
+                  <span className="text-[10px] text-muted-foreground">Spent: {p.spent}</span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground font-semibold">Milestone Completion</span>
+                  <span className="font-extrabold text-foreground font-mono">{p.progress}%</span>
+                </div>
+                <div className="w-full bg-accent h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full gold-gradient transition-all duration-500"
+                    style={{ width: `${p.progress}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Lead: <strong className="text-foreground">{p.lead}</strong> ({p.team} Engineers)</span>
+                <span className="flex items-center gap-1 font-semibold text-foreground/80">
+                  <Calendar className="w-3.5 h-3.5 text-muted-foreground" /> {p.deadline}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-      <Link href={`/projects/${index}`}>
-        <h4 className="text-base font-bold text-card-foreground group-hover:text-gold-400 transition-colors mb-1">{title}</h4>
-      </Link>
-      <p className="text-[10px] text-muted-foreground mb-4 flex items-center">
-        <Target className="w-3 h-3 mr-1" /> {client}
-      </p>
-      <div className="flex justify-between text-[10px] text-muted-foreground mb-2">
-        <span className="font-semibold uppercase tracking-widest">Progress</span>
-        <span className="font-bold">{progress}%</span>
-      </div>
-      <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
-        <div className={cn("h-full rounded-full transition-all", progress === 100 ? "bg-gold-500" : "bg-gold-500/70")} style={{ width: `${progress}%` }} />
+
+      {/* Main Grid: Sprint Task Kanban + Squad Workload */}
+      <div className="space-y-6">
+        <TaskKanban />
+
+        {/* Squad Allocation */}
+        <div className="glass rounded-3xl p-5 sm:p-7 border border-border/80 shadow-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">
+                Squad Resource Allocation & Workload
+              </h3>
+              <p className="text-xs text-muted-foreground">Engineering capacity distribution across core technical domains</p>
+            </div>
+            <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+              Optimal Balancing
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+            {squadWorkloads.map((sq, i) => (
+              <div key={i} className="p-4 rounded-2xl bg-card/60 border border-border/70 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-xs font-bold text-foreground line-clamp-1">{sq.squad.split(" (")[0]}</h5>
+                  <span className={`text-[9px] font-extrabold px-2 py-0.2 rounded-full border uppercase tracking-wider ${
+                    sq.load > 90 ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                  }`}>
+                    {sq.status}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-muted-foreground text-[10px]">{sq.members}</span>
+                    <span className="gold-text font-mono font-extrabold">{sq.load}% Load</span>
+                  </div>
+                  <div className="w-full bg-accent h-1.5 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${sq.load > 90 ? "bg-amber-500" : "gold-gradient"}`}
+                      style={{ width: `${sq.load}%` }}
+                    />
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">{sq.focus}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
