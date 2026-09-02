@@ -1,74 +1,97 @@
 "use client";
 
+import { useState } from "react";
 import { 
   History, User, Activity, 
   Search, Filter, Download,
-  ExternalLink
+  ExternalLink, ShieldCheck, FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const logs = [
-  { id: 1, user: "Alex Rivera", action: "Update BOM", module: "MANUFACTURING", time: "2m ago", ip: "192.168.1.1", detail: "Standard Assembly v1.0 updated" },
-  { id: 2, user: "Sarah Jenkins", action: "Create Lead", module: "CRM", time: "15m ago", ip: "192.168.1.45", detail: "New lead: Meta Corp" },
-  { id: 3, user: "System", action: "Inventory Backup", module: "SYSTEM", time: "1h ago", ip: "Local", detail: "Daily backup completed" },
-  { id: 4, user: "Mike Johnson", action: "Delete Invoice", module: "FINANCE", time: "3h ago", ip: "102.34.12.1", detail: "Invoice #INV-2024-001 deleted" },
+  { id: 1, user: "Farhan Ahmed", action: "Dispatched Payroll Batch", module: "HRM", time: "2m ago", ip: "103.145.112.4", detail: "$248.5K monthly payroll executed" },
+  { id: 2, user: "Nusrat Jahan", action: "Moved Deal to Proposal", module: "CRM", time: "15m ago", ip: "103.145.112.18", detail: "Meta Corp ($85k) moved to Proposal" },
+  { id: 3, user: "System Daemon", action: "Multi-Warehouse Inventory Sync", module: "INVENTORY", time: "1h ago", ip: "Internal Loopback", detail: "All 3 mega-hubs synchronized" },
+  { id: 4, user: "Tariqul Islam", action: "Reconciled Master Ledger", module: "FINANCE", time: "3h ago", ip: "103.145.112.22", detail: "Zero discrepancy trial balance" },
 ];
 
 export default function AuditTable() {
+  const [search, setSearch] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      toast.success("Security & Transaction Audit Log exported to CSV/PDF dossier.");
+    }, 1000);
+  };
+
+  const filteredLogs = logs.filter((l) => 
+    l.user.toLowerCase().includes(search.toLowerCase()) || 
+    l.action.toLowerCase().includes(search.toLowerCase()) || 
+    l.module.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
-           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-           <input type="text" placeholder="Search by user, action or module..." className="w-full bg-white dark:bg-slate-900 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-injaazh-500/20 outline-none shadow-sm" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input 
+            type="text" 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by user, action or module..." 
+            className="w-full bg-background border border-border rounded-xl py-2 pl-9 pr-4 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:border-gold-500/50" 
+          />
         </div>
         <div className="flex items-center space-x-2">
-           <Button variant="outline" className="rounded-xl h-10 border-slate-200"><Filter className="w-4 h-4 mr-2" /> Filter</Button>
-           <Button variant="outline" className="rounded-xl h-10 border-slate-200"><Download className="w-4 h-4 mr-2" /> Export Log</Button>
+          <Button 
+            onClick={handleExport}
+            disabled={isExporting}
+            variant="outline" 
+            className="rounded-xl h-10 border-border text-xs font-bold bg-card/60"
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2 text-gold-500" /> Export Audit Log
+          </Button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="glass rounded-3xl border border-border/80 shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-xs text-left">
             <thead>
-              <tr className="bg-slate-50/50 dark:bg-slate-900/50 text-slate-500 font-bold uppercase tracking-widest text-[10px]">
-                <th className="p-6 border-b dark:border-slate-800">Timestamp</th>
-                <th className="p-6 border-b dark:border-slate-800">User</th>
-                <th className="p-6 border-b dark:border-slate-800">Action</th>
-                <th className="p-6 border-b dark:border-slate-800">Module</th>
-                <th className="p-6 border-b dark:border-slate-800">IP Address</th>
-                <th className="p-6 border-b dark:border-slate-800">Details</th>
+              <tr className="bg-card/60 text-muted-foreground font-extrabold uppercase tracking-wider text-[10px] border-b border-border/60">
+                <th className="p-4">Timestamp</th>
+                <th className="p-4">User</th>
+                <th className="p-4">Action</th>
+                <th className="p-4">Module</th>
+                <th className="p-4">IP Address</th>
+                <th className="p-4">Audit Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {logs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
-                  <td className="p-6 text-slate-400">{log.time}</td>
-                  <td className="p-6">
-                    <div className="flex items-center space-x-2">
-                       <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">
-                          {log.user.split(' ').map(n => n[0]).join('')}
-                       </div>
-                       <span className="font-bold text-slate-900 dark:text-white">{log.user}</span>
+            <tbody className="divide-y divide-border/50">
+              {filteredLogs.map((log) => (
+                <tr key={log.id} className="hover:bg-accent/40 transition-colors group">
+                  <td className="p-4 text-muted-foreground font-medium">{log.time}</td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-7 h-7 rounded-xl gold-gradient flex items-center justify-center text-[10px] font-extrabold text-obsidian-950 shrink-0">
+                        {log.user.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <span className="font-bold text-foreground">{log.user}</span>
                     </div>
                   </td>
-                  <td className="p-6 font-medium">{log.action}</td>
-                  <td className="p-6">
-                    <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-                       {log.module}
+                  <td className="p-4 font-bold text-foreground">{log.action}</td>
+                  <td className="p-4">
+                    <span className="px-2 py-0.5 rounded-full bg-gold-500/10 text-gold-600 dark:text-gold-400 border border-gold-500/20 text-[9px] font-extrabold uppercase tracking-wider">
+                      {log.module}
                     </span>
                   </td>
-                  <td className="p-6 font-mono text-[10px] text-slate-400">{log.ip}</td>
-                  <td className="p-6">
-                    <div className="flex items-center justify-between">
-                       <span className="text-slate-500 text-xs">{log.detail}</span>
-                       <button className="opacity-0 group-hover:opacity-100 transition-opacity text-injaazh-600">
-                          <ExternalLink className="w-4 h-4" />
-                       </button>
-                    </div>
-                  </td>
+                  <td className="p-4 font-mono text-[10px] text-muted-foreground">{log.ip}</td>
+                  <td className="p-4 text-muted-foreground">{log.detail}</td>
                 </tr>
               ))}
             </tbody>
