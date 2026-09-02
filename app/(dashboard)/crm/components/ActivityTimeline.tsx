@@ -2,14 +2,14 @@
 
 import {
   Phone, Mail, Users, FileText,
-  CheckCircle2, Clock
+  CheckCircle2, Clock, Calendar, MessageSquare
 } from "lucide-react";
 
 const activities = [
-  { id: 1, type: "CALL", subject: "Initial discovery call", contact: "Alex Rivera", date: "Today, 10:30 AM", status: "DONE" },
-  { id: 2, type: "EMAIL", subject: "Sent proposal draft", contact: "Sarah Connor", date: "Yesterday, 4:15 PM", status: "DONE" },
-  { id: 3, type: "MEETING", subject: "Project requirements discussion", contact: "Alex Rivera", date: "Tomorrow, 11:00 AM", status: "TODO" },
-  { id: 4, type: "NOTE", subject: "Follow up next week about budget", contact: "Bruce Wayne", date: "May 12, 2026", status: "DONE" },
+  { id: 1, type: "CALL", subject: "Discovery with VP of Tech - Meta Corp", contact: "Mark Vance", date: "Today, 10:30 AM", status: "DONE" },
+  { id: 2, type: "EMAIL", subject: "Dispatched Custom Proposal & SLA - SpaceX", contact: "Elena Rostova", date: "Today, 02:15 PM", status: "DONE" },
+  { id: 3, type: "MEETING", subject: "Commercial Contract Review - Tesla Energy", contact: "Marcus Sterling", date: "Tomorrow, 11:00 AM", status: "TODO" },
+  { id: 4, type: "NOTE", subject: "Q4 Multi-tenant architecture audit requested", contact: "Chloe Dupont", date: "Yesterday, 04:30 PM", status: "DONE" },
 ];
 
 const icons: Record<string, React.ReactNode> = {
@@ -21,40 +21,51 @@ const icons: Record<string, React.ReactNode> = {
 
 export default function ActivityTimeline() {
   return (
-    <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-      <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Activity Timeline</h3>
-      <div className="space-y-4">
+    <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-md space-y-4 hover:border-gold-500/30 transition-all duration-300">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-foreground font-heading">Live Interaction Pulse</h3>
+          <p className="text-[10px] text-muted-foreground">Recent customer communications & meeting logs</p>
+        </div>
+        <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+          Sync Active
+        </span>
+      </div>
+
+      <div className="space-y-3 pt-2">
         {activities.map((activity, index) => (
-          <div key={activity.id} className="relative pl-10">
+          <div key={activity.id} className="relative pl-8">
             {index < activities.length - 1 && (
-              <div className="absolute left-[19px] top-10 bottom-[-16px] w-0.5 bg-border" />
+              <div className="absolute left-[13px] top-8 bottom-[-12px] w-0.5 bg-border" />
             )}
-            <div className={`absolute left-0 top-1 w-10 h-10 rounded-full border-2 border-card flex items-center justify-center shadow-sm ${
-              activity.status === "DONE" ? "bg-emerald-500/15 text-emerald-400" : "bg-gold-500/15 text-gold-400"
+            <div className={`absolute left-0 top-1 w-7 h-7 rounded-xl border flex items-center justify-center shadow-sm ${
+              activity.status === "DONE" 
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" 
+                : "bg-gold-500/10 text-gold-600 dark:text-gold-400 border-gold-500/20"
             }`}>
               {icons[activity.type]}
             </div>
-            <div className="bg-card/40 backdrop-blur-xl rounded-xl border border-border p-4 hover:border-gold-500/10 transition-all">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{activity.type}</span>
-                <span className="text-[10px] text-muted-foreground font-medium">{activity.date}</span>
+
+            <div className="p-3.5 rounded-2xl bg-card/60 hover:bg-card border border-border/70 hover:border-gold-500/30 transition-all space-y-2 group shadow-sm">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-extrabold text-foreground bg-accent/60 px-2 py-0.2 rounded-md">{activity.type}</span>
+                <span className="text-muted-foreground">{activity.date}</span>
               </div>
-              <h4 className="font-bold text-card-foreground text-sm">{activity.subject}</h4>
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <div className="w-5 h-5 rounded-full bg-gold-500/20 flex items-center justify-center text-[8px] font-bold text-gold-400 mr-2">
-                    {activity.contact[0]}
-                  </div>
-                  {activity.contact}
-                </div>
+
+              <h4 className="font-bold text-foreground text-xs leading-snug group-hover:text-gold-500 transition-colors">
+                {activity.subject}
+              </h4>
+
+              <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[10px]">
+                <span className="text-muted-foreground font-semibold">Contact: {activity.contact}</span>
                 {activity.status === "TODO" ? (
-                  <div className="flex items-center text-xs font-bold text-gold-400">
-                    <Clock className="w-3 h-3 mr-1" /> Upcoming
-                  </div>
+                  <span className="text-gold-600 dark:text-gold-400 font-bold flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> Upcoming
+                  </span>
                 ) : (
-                  <div className="flex items-center text-xs font-bold text-emerald-400">
-                    <CheckCircle2 className="w-3 h-3 mr-1" /> Completed
-                  </div>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Completed
+                  </span>
                 )}
               </div>
             </div>

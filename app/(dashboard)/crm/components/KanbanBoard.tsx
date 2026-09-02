@@ -12,20 +12,23 @@ import {
 } from "@dnd-kit/core";
 import KanbanColumn from "./KanbanColumn";
 import LeadCard, { Lead } from "./LeadCard";
+import { toast } from "sonner";
 
 const initialLeads: Lead[] = [
-  { id: "L1", title: "Office Supplies Deal", company: "Meta Corp", value: 12000, stage: "NEW", closeDate: "Jun 12", days: 3, priority: "high", aiScore: "HOT" },
-  { id: "L2", title: "Enterprise CRM", company: "Tesla Inc", value: 50000, stage: "QUALIFIED", closeDate: "Jul 05", days: 12, priority: "medium", aiScore: "HOT" },
-  { id: "L3", title: "Cloud Migration", company: "SpaceX", value: 35000, stage: "CONTACTED", closeDate: "Jun 20", days: 5, priority: "low", aiScore: "WARM" },
-  { id: "L4", title: "Bulk Hardware", company: "Amazon", value: 15000, stage: "NEW", closeDate: "Jun 28", days: 1, priority: "medium" },
+  { id: "L1", title: "Enterprise SaaS Annual Plan", company: "Meta Corp", value: 85000, stage: "PROPOSAL", closeDate: "Sep 15", days: 4, priority: "high", aiScore: "HOT" },
+  { id: "L2", title: "Ground Telemetry Integration", company: "SpaceX Systems", value: 62000, stage: "PROPOSAL", closeDate: "Sep 22", days: 6, priority: "high", aiScore: "HOT" },
+  { id: "L3", title: "Energy Fleet AI Optimization", company: "Tesla Energy", value: 48000, stage: "QUALIFIED", closeDate: "Oct 05", days: 12, priority: "medium", aiScore: "HOT" },
+  { id: "L4", title: "Global Billing Multi-Tenant", company: "Stripe Corporate", value: 35000, stage: "CONTACTED", closeDate: "Oct 18", days: 3, priority: "low", aiScore: "WARM" },
+  { id: "L5", title: "Cloud Infrastructure Migration", company: "Amazon Logistics", value: 120000, stage: "WON", closeDate: "Aug 28", days: 18, priority: "high", aiScore: "HOT" },
+  { id: "L6", title: "Hardware Procurement Batch", company: "Quantum Scale", value: 24000, stage: "NEW", closeDate: "Nov 02", days: 1, priority: "medium", aiScore: "WARM" },
 ];
 
 const STAGES = [
-  { id: "NEW", title: "New" },
+  { id: "NEW", title: "Discovery & Leads" },
   { id: "CONTACTED", title: "Contacted" },
-  { id: "QUALIFIED", title: "Qualified" },
-  { id: "PROPOSAL", title: "Proposal" },
-  { id: "WON", title: "Won" },
+  { id: "QUALIFIED", title: "Qualified Opps" },
+  { id: "PROPOSAL", title: "Proposal & Pitch" },
+  { id: "WON", title: "Closed Won" },
 ];
 
 export default function KanbanBoard() {
@@ -33,7 +36,11 @@ export default function KanbanBoard() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
 
@@ -46,11 +53,18 @@ export default function KanbanBoard() {
     if (!over) return;
 
     if (active.id !== over.id) {
+      const movedLead = leads.find((l) => l.id === active.id);
+      const targetStage = STAGES.find((s) => s.id === over.id);
+
       setLeads((prev) =>
         prev.map((lead) =>
           lead.id === active.id ? { ...lead, stage: over.id } : lead
         )
       );
+
+      if (movedLead && targetStage) {
+        toast.success(`Moved "${movedLead.company}" to ${targetStage.title}! Stage revenue updated.`);
+      }
     }
     setActiveId(null);
   }
@@ -58,9 +72,22 @@ export default function KanbanBoard() {
   const activeLead = activeId ? (leads.find(l => l.id === activeId) as Lead) : null;
 
   return (
-    <div className="bg-card/60 backdrop-blur-xl rounded-xl border border-border p-5 hover:border-gold-500/20 transition-all duration-300">
-      <h3 className="text-sm font-semibold text-card-foreground font-heading mb-4">Pipeline Kanban</h3>
-      <div className="flex space-x-6 overflow-x-auto pb-2 custom-scrollbar">
+    <div className="glass rounded-3xl border border-border/80 p-5 sm:p-6 shadow-xl space-y-4">
+      <div className="flex items-center justify-between px-1">
+        <div>
+          <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">
+            Live Deal Flow & Stage Progression
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Drag deals across columns to synchronize revenue forecasts in real time
+          </p>
+        </div>
+        <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 hidden sm:inline">
+          DndKit Engine Active
+        </span>
+      </div>
+
+      <div className="flex space-x-4 overflow-x-auto pb-4 pt-2 custom-scrollbar">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
