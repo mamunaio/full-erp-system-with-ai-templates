@@ -6,17 +6,19 @@ import {
   Package, Warehouse, AlertTriangle, ArrowDownLeft, 
   ArrowUpRight, RefreshCcw, Plus, Search, Filter, 
   Sparkles, DollarSign, Layers, CheckCircle2, ShoppingCart,
-  ArrowRight, ChevronRight, Barcode, Truck
+  ArrowRight, ChevronRight, Barcode, Truck, FileSpreadsheet,
+  Building2, ShieldCheck, Box
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import MovementLog from "./components/MovementLog";
+import WarehouseCard from "./components/WarehouseCard";
 
 const warehouses = [
-  { id: "w1", name: "Central HQ Mega-Hub", location: "Dhaka Central Zone", capacity: 84, used: "12,600 / 15,000 m³", items: "2,450 SKUs", temp: "21°C • Ambient", status: "Optimal" },
-  { id: "w2", name: "Chittagong Port Logistics Hub", location: "Chittagong Port Terminal", capacity: 62, used: "18,600 / 30,000 m³", items: "1,280 SKUs", temp: "18°C • Chilled", status: "Active" },
-  { id: "w3", name: "Regional Transit Depot", location: "Gazipur Industrial Zone", capacity: 38, used: "3,800 / 10,000 m³", items: "550 SKUs", temp: "Ambient", status: "Available" },
+  { id: "w1", name: "Central HQ Mega-Hub", location: "Dhaka Central Logistics Park", capacity: 84, used: "12,600 / 15,000 m³", items: "2,450 SKUs", temp: "21°C • Ambient", status: "Optimal", manager: "Farhan Ahmed" },
+  { id: "w2", name: "Chittagong Port Logistics Hub", location: "Chittagong Port Free Trade Zone", capacity: 62, used: "18,600 / 30,000 m³", items: "1,280 SKUs", temp: "18°C • Chilled", status: "Active", manager: "Kamal Hossain" },
+  { id: "w3", name: "Regional Transit Depot", location: "Gazipur Industrial Depot", capacity: 38, used: "3,800 / 10,000 m³", items: "550 SKUs", temp: "Ambient", status: "Available", manager: "Tariqul Islam" },
 ];
 
 const lowStockItems = [
@@ -28,10 +30,24 @@ const lowStockItems = [
 
 export default function InventoryDashboard() {
   const [orderedItems, setOrderedItems] = useState<string[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleReorder = (item: typeof lowStockItems[0]) => {
     setOrderedItems((prev) => [...prev, item.id]);
-    toast.success(`Purchase Order generated for ${item.reorderQty} units of ${item.name}! Sent to ${item.supplier}.`);
+    toast.success(`Purchase Order dispatched for ${item.reorderQty} units of ${item.name} ($${(item.reorderQty * parseInt(item.cost.replace(/[^0-9]/g, ''))).toLocaleString()}) to ${item.supplier}!`);
+  };
+
+  const handleReorderAll = () => {
+    setOrderedItems(lowStockItems.map((i) => i.id));
+    toast.success("Dispatched 4 consolidated Purchase Orders ($86,300) to tier-1 suppliers!");
+  };
+
+  const handleExportStock = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      toast.success("Warehouse Inventory Ledger exported to CSV & PDF!");
+    }, 1000);
   };
 
   return (
@@ -44,7 +60,7 @@ export default function InventoryDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-ping" />
-              <span className="text-[11px] font-extrabold text-purple-500 dark:text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20">
+              <span className="text-[11px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20">
                 Asset & Warehouse Logistics
               </span>
             </div>
@@ -52,11 +68,20 @@ export default function InventoryDashboard() {
               Inventory & <span className="gold-text">Supply Matrix</span>
             </h1>
             <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-xl">
-              Multi-warehouse capacity tracking, automated low-stock replenishment, and real-time movement auditing.
+              Multi-warehouse spatial capacity tracking, automated low-stock PO replenishment, and real-time movement audits.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={handleExportStock}
+              disabled={isExporting}
+              variant="outline"
+              className="rounded-2xl h-11 sm:h-12 px-4 border-border bg-card/60 font-bold text-xs hover:bg-accent"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-500" />
+              <span>{isExporting ? "Exporting..." : "Export Ledger"}</span>
+            </Button>
             <Link href="/inventory/products">
               <Button variant="outline" className="rounded-2xl h-11 sm:h-12 px-5 border-border bg-card/60 font-bold text-xs sm:text-sm hover:bg-accent">
                 <Package className="w-4 h-4 mr-2 text-gold-500" /> SKU Catalog (4,280)
@@ -72,49 +97,53 @@ export default function InventoryDashboard() {
 
         {/* Valuation & Logistics Metrics */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 mt-6 border-t border-border/50">
-          <div className="bg-card/50 p-4 rounded-2xl border border-border">
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+          <div className="bg-card/50 p-4 rounded-2xl border border-border space-y-1">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
               <span>Total Stock Valuation</span>
               <DollarSign className="w-3.5 h-3.5 text-gold-500" />
             </div>
-            <div className="text-2xl font-extrabold text-foreground font-heading">$1,840,500</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">$1,840,500</div>
           </div>
 
-          <div className="bg-card/50 p-4 rounded-2xl border border-border">
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+          <div className="bg-card/50 p-4 rounded-2xl border border-border space-y-1">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
               <span>Low-Stock Alerts</span>
               <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
             </div>
-            <div className="text-2xl font-extrabold text-amber-500 font-heading">4 SKUs <span className="text-xs text-muted-foreground font-sans font-medium">Need PO</span></div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-amber-500 font-heading">
+              4 SKUs <span className="text-xs text-muted-foreground font-sans font-medium">Need PO</span>
+            </div>
           </div>
 
-          <div className="bg-card/50 p-4 rounded-2xl border border-border">
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
+          <div className="bg-card/50 p-4 rounded-2xl border border-border space-y-1">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
               <span>Active Warehouses</span>
               <Warehouse className="w-3.5 h-3.5 text-purple-500" />
             </div>
-            <div className="text-2xl font-extrabold text-foreground font-heading">3 Hubs</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">3 Hubs</div>
           </div>
 
-          <div className="bg-card/50 p-4 rounded-2xl border border-border">
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-1">
-              <span>Stock Turnover Ratio</span>
+          <div className="bg-card/50 p-4 rounded-2xl border border-border space-y-1">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
+              <span>Annual Stock Turnover</span>
               <RefreshCcw className="w-3.5 h-3.5 text-emerald-500" />
             </div>
-            <div className="text-2xl font-extrabold text-emerald-500 font-heading">8.4x <span className="text-xs text-muted-foreground font-sans font-medium">Yearly</span></div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-heading">8.4x / yr</div>
           </div>
         </div>
       </div>
 
-      {/* Main Section 1: Warehouse Spatial Capacity Heatmap */}
-      <div className="space-y-3">
+      {/* Warehouse Spatial Capacity Heatmap */}
+      <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">Warehouse Spatial Utilization</h3>
-            <p className="text-xs text-muted-foreground">Real-time volumetric capacity and bin storage allocation</p>
+            <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">
+              Multi-Warehouse Spatial Capacity & Temperature
+            </h3>
+            <p className="text-xs text-muted-foreground">Volumetric storage allocation and live environmental monitoring</p>
           </div>
           <Link href="/inventory/warehouses">
-            <Button variant="ghost" size="sm" className="text-xs font-semibold text-gold-500 hover:text-gold-400">
+            <Button variant="ghost" size="sm" className="text-xs font-bold text-gold-600 dark:text-gold-400 hover:text-foreground">
               Manage Hubs <ChevronRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           </Link>
@@ -122,152 +151,134 @@ export default function InventoryDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {warehouses.map((wh) => (
-            <div key={wh.id} className="glass rounded-3xl p-5 border border-border/80 shadow-lg space-y-4 relative overflow-hidden group hover:border-gold-500/30 transition-all">
+            <div key={wh.id} className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-md space-y-4 hover:border-gold-500/30 transition-all">
               <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-sm font-bold text-foreground group-hover:text-gold-500 transition-colors">{wh.name}</h4>
-                  <p className="text-[11px] text-muted-foreground">{wh.location}</p>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                    {wh.status}
+                  </span>
+                  <h4 className="text-base font-bold text-foreground font-heading pt-1">{wh.name}</h4>
+                  <p className="text-xs text-muted-foreground">{wh.location}</p>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-foreground">
-                  {wh.items}
-                </span>
+                <div className="text-right">
+                  <div className="text-xl font-extrabold gold-text font-heading">{wh.capacity}%</div>
+                  <span className="text-[10px] text-muted-foreground font-semibold">Capacity</span>
+                </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="text-muted-foreground font-medium">Storage Volume</span>
-                  <span className="font-extrabold text-foreground">{wh.capacity}%</span>
+              {/* Progress Bar */}
+              <div className="w-full bg-accent h-2 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    wh.capacity > 80 ? "bg-amber-500" : wh.capacity > 50 ? "gold-gradient" : "bg-emerald-500"
+                  }`}
+                  style={{ width: `${wh.capacity}%` }}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
+                <div>
+                  <div className="text-[10px] text-muted-foreground">Volumetric Usage</div>
+                  <div className="font-bold text-foreground">{wh.used}</div>
                 </div>
-                <div className="w-full h-2.5 rounded-full bg-accent overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      wh.capacity > 80 ? "bg-amber-500" : wh.capacity > 50 ? "bg-emerald-500" : "bg-blue-500"
-                    }`}
-                    style={{ width: `${wh.capacity}%` }}
-                  />
+                <div>
+                  <div className="text-[10px] text-muted-foreground">Catalog Depth</div>
+                  <div className="font-bold text-foreground">{wh.items}</div>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1.5">
-                  <span>{wh.used}</span>
-                  <span className="text-emerald-500 font-semibold">{wh.temp}</span>
-                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+                <span>Temp: {wh.temp}</span>
+                <span className="text-foreground font-semibold">Lead: {wh.manager}</span>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Main Section 2: Critical Stock Table with 1-Click PO + Movement Stream */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Critical Low-Stock Replenishment */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
-                  <AlertTriangle className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-foreground font-heading">Critical Stock Replenishment</h3>
-                  <p className="text-xs text-muted-foreground">SKUs approaching or below safe buffer threshold</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
-                Action Required
-              </span>
+      {/* Critical Low-Stock Replenishment Center */}
+      <div className="glass rounded-3xl p-5 sm:p-7 border border-border/80 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5" />
             </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">Critical Low-Stock Replenishment Hub</h3>
+              <p className="text-xs text-muted-foreground">Items with inventory levels below emergency buffer safety thresholds</p>
+            </div>
+          </div>
 
-            <div className="divide-y divide-border/50 pt-1">
+          <Button 
+            onClick={handleReorderAll}
+            className="gold-gradient text-obsidian-900 font-extrabold text-xs rounded-2xl h-11 px-6 shadow-md shadow-gold-500/20 hover:opacity-90"
+          >
+            <ShoppingCart className="w-4 h-4 mr-1.5" /> Auto-Replenish All 4 SKUs ($86.3K)
+          </Button>
+        </div>
+
+        <div className="overflow-x-auto pt-2">
+          <table className="w-full text-xs text-left">
+            <thead>
+              <tr className="bg-card/50 text-muted-foreground font-extrabold uppercase tracking-wider text-[10px] border-b border-border/60">
+                <th className="p-4">SKU Code & Product</th>
+                <th className="p-4">Current Stock</th>
+                <th className="p-4">Safety Buffer</th>
+                <th className="p-4">Supplier Partner</th>
+                <th className="p-4">Unit Cost</th>
+                <th className="p-4 text-right">Quick Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
               {lowStockItems.map((item) => {
                 const isOrdered = orderedItems.includes(item.id);
 
                 return (
-                  <div key={item.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-foreground">{item.name}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground bg-accent px-1.5 py-0.2 rounded">{item.sku}</span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">Supplier: {item.supplier}</p>
-                    </div>
-
-                    <div className="flex items-center gap-4 text-xs justify-between sm:justify-end">
-                      <div className="text-right">
-                        <div className="text-sm font-extrabold text-amber-500">{item.stock} in stock</div>
-                        <div className="text-[10px] text-muted-foreground">Min buffer: {item.min}</div>
-                      </div>
-
+                  <tr key={item.id} className="hover:bg-accent/40 transition-colors">
+                    <td className="p-4">
+                      <div className="font-bold text-foreground text-sm">{item.name}</div>
+                      <div className="text-[10px] font-mono text-muted-foreground">{item.sku}</div>
+                    </td>
+                    <td className="p-4">
+                      <span className="font-extrabold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20 text-xs">
+                        {item.stock} Units Left
+                      </span>
+                    </td>
+                    <td className="p-4 text-muted-foreground font-semibold">Min {item.min} Units</td>
+                    <td className="p-4 text-foreground font-medium">{item.supplier}</td>
+                    <td className="p-4 font-bold text-foreground">{item.cost}</td>
+                    <td className="p-4 text-right">
                       <Button
                         size="sm"
                         disabled={isOrdered}
                         onClick={() => handleReorder(item)}
-                        className={`rounded-xl text-xs font-bold ${
+                        className={`rounded-xl text-xs font-bold h-9 px-4 ${
                           isOrdered
-                            ? "bg-emerald-500/15 text-emerald-500 border border-emerald-500/30"
-                            : "gold-gradient text-obsidian-900 hover:opacity-90 shadow-sm"
+                            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default"
+                            : "gold-gradient text-obsidian-900 shadow-sm hover:opacity-90"
                         }`}
                       >
                         {isOrdered ? (
-                          <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> PO Sent</span>
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> PO Sent ({item.reorderQty})
+                          </>
                         ) : (
-                          <span className="flex items-center gap-1"><ShoppingCart className="w-3.5 h-3.5" /> 1-Click PO ({item.reorderQty})</span>
+                          <>
+                            <ShoppingCart className="w-3.5 h-3.5 mr-1" /> Order {item.reorderQty} Units
+                          </>
                         )}
                       </Button>
-                    </div>
-                  </div>
+                    </td>
+                  </tr>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Real-time Movement Log Stream */}
-          <div className="space-y-3">
-            <div>
-              <h3 className="text-base font-bold text-foreground font-heading">Real-Time Stock Movement Audit</h3>
-              <p className="text-xs text-muted-foreground">Inbound GRNs, outbound customer deliveries, and internal transfers</p>
-            </div>
-            <MovementLog />
-          </div>
-        </div>
-
-        {/* Right 1 Col: Quick Logistics Tools & Categories */}
-        <div className="space-y-6">
-          <div className="glass rounded-3xl p-5 sm:p-6 border border-border/80 shadow-lg space-y-4">
-            <h4 className="text-sm font-bold text-foreground font-heading">Quick Logistics Tools</h4>
-            
-            <div className="space-y-2">
-              <Link href="/inventory/stock" className="block">
-                <div className="p-3 rounded-2xl bg-card/60 hover:bg-card border border-border hover:border-gold-500/30 transition-all flex items-center justify-between group">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-gold-500/10 text-gold-500 flex items-center justify-center">
-                      <Barcode className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">Barcode Audit</div>
-                      <div className="text-[10px] text-muted-foreground">Scan & verify physical stock</div>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-gold-500 transition-colors" />
-                </div>
-              </Link>
-
-              <Link href="/procurement" className="block">
-                <div className="p-3 rounded-2xl bg-card/60 hover:bg-card border border-border hover:border-gold-500/30 transition-all flex items-center justify-between group">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                      <Truck className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">Supplier Inbound Shipments</div>
-                      <div className="text-[10px] text-muted-foreground">3 POs expected this week</div>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-blue-500 transition-colors" />
-                </div>
-              </Link>
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Real-time Movement & Audit Stream */}
+      <MovementLog />
     </div>
   );
 }
