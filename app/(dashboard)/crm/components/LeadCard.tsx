@@ -21,15 +21,15 @@ export interface Lead {
   aiScore?: "HOT" | "WARM" | "COLD";
 }
 
-export default function LeadCard({ lead }: { lead: Lead }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+export default function LeadCard({ lead, isOverlay = false }: { lead: Lead; isOverlay?: boolean }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: lead.id,
+    disabled: isOverlay,
+    data: {
+      lead,
+      stage: lead.stage,
+    },
   });
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.4 : 1,
-  };
 
   const priorityBadge = {
     high: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
@@ -43,13 +43,29 @@ export default function LeadCard({ lead }: { lead: Lead }) {
     COLD: "bg-blue-500/15 text-blue-500 border-blue-500/30",
   };
 
+  const cardStyle: React.CSSProperties = isOverlay
+    ? {
+        cursor: "grabbing",
+        width: "300px",
+        boxShadow: "0 25px 50px -12px rgba(245, 158, 11, 0.35), 0 0 25px rgba(245, 158, 11, 0.2)",
+        transform: "scale(1.02)",
+      }
+    : {
+        opacity: isDragging ? 0.25 : 1,
+        touchAction: "none",
+      };
+
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className="p-4 rounded-2xl bg-card/80 hover:bg-card border border-border/80 hover:border-gold-500/40 shadow-sm hover:shadow-lg cursor-grab active:cursor-grabbing transition-all group mb-3 space-y-3 relative overflow-hidden"
+      ref={isOverlay ? undefined : setNodeRef}
+      style={cardStyle}
+      {...(isOverlay ? {} : listeners)}
+      {...(isOverlay ? {} : attributes)}
+      className={`p-4 rounded-2xl bg-card border transition-all mb-3 space-y-3 relative overflow-hidden select-none ${
+        isOverlay
+          ? "border-gold-500 ring-2 ring-gold-500/50 shadow-2xl z-50 pointer-events-none cursor-grabbing"
+          : "border-border/80 hover:border-gold-500/40 shadow-sm hover:shadow-lg cursor-grab active:cursor-grabbing group"
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-0.5 min-w-0">
@@ -90,21 +106,23 @@ export default function LeadCard({ lead }: { lead: Lead }) {
 
         <div className="flex items-center gap-1">
           <button
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               toast.success(`Calling ${lead.company} key contact...`);
             }}
-            className="p-1 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
+            className="p-1 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Call"
           >
             <Phone className="w-3 h-3" />
           </button>
           <button
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               toast.success(`Drafted pitch proposal for ${lead.company}`);
             }}
-            className="p-1 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
+            className="p-1 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Email"
           >
             <Mail className="w-3 h-3" />

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/components/providers/session-provider";
 
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,8 +33,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.variable, playfair.variable, "font-sans min-h-screen bg-background antialiased")}>
         <AuthProvider>
-          {children}
-          <Toaster position="top-center" richColors />
+          <TooltipProvider delayDuration={80}>
+            {children}
+            <Toaster position="top-center" richColors />
+          </TooltipProvider>
         </AuthProvider>
       </body>
     </html>
