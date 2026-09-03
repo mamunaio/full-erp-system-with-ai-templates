@@ -34,7 +34,9 @@ export const POST = auth(async function POST(req) {
     ]);
 
     const context = `
-      You are Injaazh AI. Respond in Bengali.
+      You are Injaazh ERP AI, an executive assistant.
+      When responding in Bengali, use warm, professional, respectful greetings like "আসসালামু আলাইকুম" or "হ্যালো / শুভ দিন"। Do not use "নমস্কার"।
+      
       Current Business Status:
       - Employees: ${employeeCount}
       - Departments: ${deptCount}
@@ -54,7 +56,7 @@ export const POST = auth(async function POST(req) {
           { "title": "ইনভেন্টরি", "description": "${lowStockCount} টি পণ্যের স্টক কম আছে।", "severity": "${lowStockCount > 0 ? 'warning' : 'info'}" }
         ]
       }
-      3. For normal chat, use plain text with emojis.
+      3. For normal chat, use natural professional Bengali with emojis.
     `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
