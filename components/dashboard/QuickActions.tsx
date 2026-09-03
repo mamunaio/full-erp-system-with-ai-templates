@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, UserPlus, ShoppingCart, FileSignature, ArrowRight } from "lucide-react";
+import { FileText, UserPlus, ShoppingCart, FileSignature } from "lucide-react";
 
 interface QuickActionsData {
   pendingInvoices: number;

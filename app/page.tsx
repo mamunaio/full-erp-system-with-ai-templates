@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Sparkles, ShieldCheck, ArrowRight, Activity, 
-  Users, CircleDollarSign, Package, BarChart3, 
-  Zap, Database, Layers, CheckCircle2, ChevronRight,
-  TrendingUp, Bot, Terminal, Lock, Globe, Cpu, Award,
-  Check, Star, HelpCircle, ChevronDown, Calculator,
-  Building2, Landmark, Truck, Factory, HeartHandshake
+  Users, CircleDollarSign, Package, 
+  Zap, Layers, ChevronRight,
+  TrendingUp, Check, ChevronDown, Calculator,
+  HeartHandshake
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -111,12 +110,6 @@ const modules = [
   },
 ];
 
-const sampleQueries = [
-  { q: "Forecast Q4 cashflow vs planned operating expenses", a: "Predicted net surplus of $420,000 with 96% model confidence based on active deals and recurring SaaS contracts." },
-  { q: "Identify critical inventory items with stock below buffer", a: "4 SKUs flagged: Apple MacBook Pro M3 (2 units), Dell 32\" 4K (5 units). Automated PO drafts sent to suppliers." },
-  { q: "Show top 3 high-probability revenue deals in CRM pipeline", a: "1. Meta Corp ($85,000 • Score 98/100) 2. SpaceX ($62,000 • Score 94/100) 3. Tesla Energy ($48,000 • Score 89/100)." },
-];
-
 const clientLogos = [
   "Meta Systems", "Tesla Energy", "SpaceX Logistics", "Stripe Corporate", "Apex Global", "Quantum Scale"
 ];
@@ -197,7 +190,6 @@ const faqs = [
 
 export default function LandingPage() {
   const [activeModule, setActiveModule] = useState(modules[0].id);
-  const [activeQueryIndex, setActiveQueryIndex] = useState(0);
   const [teamSize, setTeamSize] = useState(150);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 

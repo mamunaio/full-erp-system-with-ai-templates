@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { startOfMonth, endOfMonth } from "date-fns";
+import { startOfMonth } from "date-fns";
 
 export class ContextBuilder {
   static async buildForQuery(tenantId: string, query: string) {

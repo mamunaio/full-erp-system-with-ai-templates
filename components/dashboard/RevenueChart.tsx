@@ -6,7 +6,6 @@ import {
   CartesianGrid, Tooltip,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { TrendingUp, DollarSign } from "lucide-react";
 
 interface DataPoint {
   month: string;

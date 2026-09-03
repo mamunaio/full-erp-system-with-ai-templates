@@ -6,9 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, FileText, Users, 
   Settings, Package, Sparkles,
-  Command, X, ArrowRight, Zap,
+  X, ArrowRight, Zap,
   CircleDollarSign, HeartHandshake,
-  Bot, Factory, Kanban, ShieldCheck
+  Bot, Factory, Kanban
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

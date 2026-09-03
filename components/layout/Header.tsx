@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { 
-  Bell, Search, Menu, Moon, Sun, User, 
-  Settings, LogOut, Shield, Command, Sparkles, Activity,
-  PanelLeftOpen
+  Search, Menu, Moon, Sun, User, 
+  Settings, LogOut, Command, PanelLeftOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/store/ui.store";
@@ -14,14 +13,12 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuLabel, 
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Landmark, ArrowUpRight, ShieldCheck, ChevronRight } from "lucide-react";
+import { Landmark, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const vaults = [

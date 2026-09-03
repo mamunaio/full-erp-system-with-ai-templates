@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Sparkles, X, Send, Bot, 
-  Terminal, ArrowRight, Zap, RefreshCw,
-  Cpu, CheckCircle2
+  Sparkles, X, Send, Bot, Cpu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

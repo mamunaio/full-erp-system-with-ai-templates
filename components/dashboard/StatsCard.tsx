@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line } from "recharts";
-import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
   title: string;

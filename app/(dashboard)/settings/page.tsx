@@ -22,7 +22,6 @@ import PermissionMatrix from "./components/PermissionMatrix";
 import AuditTable from "./components/AuditTable";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("general");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
@@ -35,7 +34,6 @@ export default function SettingsPage() {
 
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [autoAuditLogs, setAutoAuditLogs] = useState(true);
-  const [geminiModel, setGeminiModel] = useState("gemini-1.5-pro");
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
