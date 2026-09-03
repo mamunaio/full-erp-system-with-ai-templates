@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip,
@@ -16,12 +16,7 @@ interface DataPoint {
 const ranges = ["7D", "1M", "3M", "1Y"];
 
 export default function RevenueChart({ data }: { data: DataPoint[] }) {
-  const [mounted, setMounted] = useState(false);
   const [activeRange, setActiveRange] = useState("1Y");
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <div className="glass rounded-3xl border border-border/80 p-5 sm:p-6 relative overflow-hidden hover:border-gold-500/30 transition-all duration-300 shadow-xl space-y-4">
@@ -73,41 +68,35 @@ export default function RevenueChart({ data }: { data: DataPoint[] }) {
         </div>
 
         <div className="h-[280px] w-full pt-2 min-h-[280px]">
-          {mounted ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="dashboardGoldGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#D4A853" stopOpacity={0.4} />
-                    <stop offset="60%" stopColor="#D4A853" stopOpacity={0.1} />
-                    <stop offset="100%" stopColor="#D4A853" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontWeight: 600 }} dy={8} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
-                <Tooltip
-                  contentStyle={{
-                    background: 'hsl(var(--card) / 0.95)',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '16px',
-                    fontSize: '12px',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-                    color: 'hsl(var(--foreground))'
-                  }}
-                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
-                  formatter={(value: any) => [`$${Number(value).toLocaleString()}`, ""]}
-                />
-                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#D4A853" strokeWidth={2.5} fillOpacity={1} fill="url(#dashboardGoldGradient)" />
-                <Area type="monotone" dataKey="expense" name="Expense" stroke="#F43F5E" strokeWidth={2} fill="none" strokeDasharray="5 5" />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-full w-full bg-gold-500/5 rounded-2xl flex items-center justify-center text-xs text-muted-foreground font-semibold">
-              Rendering Fiscal Telemetry...
-            </div>
-          )}
+          <ResponsiveContainer width="100%" height={280}>
+            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="dashboardGoldGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#D4A853" stopOpacity={0.4} />
+                  <stop offset="60%" stopColor="#D4A853" stopOpacity={0.1} />
+                  <stop offset="100%" stopColor="#D4A853" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontWeight: 600 }} dy={8} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
+              <Tooltip
+                contentStyle={{
+                  background: 'hsl(var(--card) / 0.95)',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '16px',
+                  fontSize: '12px',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                  color: 'hsl(var(--foreground))'
+                }}
+                labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
+                formatter={(value: any) => [`$${Number(value).toLocaleString()}`, ""]}
+              />
+              <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#D4A853" strokeWidth={2.5} fillOpacity={1} fill="url(#dashboardGoldGradient)" />
+              <Area type="monotone" dataKey="expense" name="Expense" stroke="#F43F5E" strokeWidth={2} fill="none" strokeDasharray="5 5" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
