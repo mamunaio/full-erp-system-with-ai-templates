@@ -2,31 +2,9 @@
 
 import { useState } from "react";
 import { 
-  DndContext, 
-  closestCorners, 
-  KeyboardSensor, 
-  PointerSensor, 
-  useSensor, 
-  useSensors,
-  DragEndEvent,
-  DragOverEvent,
-  DragStartEvent,
-  DragOverlay,
-  useDroppable,
-  defaultDropAnimationSideEffects,
-  DropAnimation
-} from "@dnd-kit/core";
-import { 
-  arrayMove, 
-  SortableContext, 
-  sortableKeyboardCoordinates, 
-  verticalListSortingStrategy,
-  useSortable
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { 
   Calendar, MessageSquare, Paperclip, MoreHorizontal, 
-  Clock, CheckCircle2, Plus, GripVertical, Check, Sparkles 
+  Clock, CheckCircle2, Plus, GripVertical, Check, Sparkles,
+  Layers, AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -60,269 +38,140 @@ const initialTasks: Columns = {
   ],
 };
 
-function TaskCard({ task, isOverlay = false }: { task: Task; isOverlay?: boolean }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ 
-    id: task.id,
-    disabled: isOverlay 
-  });
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.3 : 1,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={cn(
-        "p-4 rounded-2xl bg-card border border-border/80 shadow-sm transition-all group cursor-grab active:cursor-grabbing space-y-3 select-none",
-        isOverlay ? "shadow-2xl border-gold-500/80 scale-105 rotate-1 bg-card/95 backdrop-blur-md" : "hover:border-gold-500/40 hover:shadow-lg"
-      )}
-    >
-      <div className="flex justify-between items-start gap-2">
-        <span className={cn(
-          "px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border",
-          task.priority === "CRITICAL" ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" :
-          task.priority === "HIGH" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" : 
-          "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-        )}>
-          {task.priority}
-        </span>
-        <span className="text-[10px] font-bold text-gold-600 dark:text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-md border border-gold-500/20 font-mono">
-          {task.points} SP
-        </span>
-      </div>
-      
-      <div>
-        <h4 className="font-bold text-xs text-foreground group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
-          {task.title}
-        </h4>
-        <p className="text-[10px] text-muted-foreground font-semibold mt-1">{task.project}</p>
-      </div>
-
-      <div className="flex items-center justify-between pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
-        <div className="flex items-center gap-1 font-semibold text-foreground/80">
-          <Calendar className="w-3 h-3 text-muted-foreground" /> {task.dueDate}
-        </div>
-        <div className="w-6 h-6 rounded-xl gold-gradient flex items-center justify-center text-[10px] font-extrabold text-obsidian-950 shadow-sm">
-          {task.assignee}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function KanbanColumn({ 
-  id, 
-  title, 
-  count, 
-  tasks,
-  onQuickAddTask 
-}: { 
-  id: string; 
-  title: string; 
-  count: number; 
-  tasks: Task[];
-  onQuickAddTask: (columnId: string) => void;
-}) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: id,
-  });
-
-  return (
-    <div 
-      ref={setNodeRef}
-      className={cn(
-        "flex-1 min-w-[280px] max-w-[340px] glass rounded-3xl p-4 border shadow-md flex flex-col transition-all",
-        isOver ? "border-gold-500/60 bg-gold-500/5 ring-2 ring-gold-500/20" : "border-border/80"
-      )}
-    >
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/50 px-1">
-        <div className="flex items-center space-x-2">
-          <h3 className="font-bold text-xs uppercase tracking-wider text-foreground font-heading">{title}</h3>
-          <span className="bg-accent/80 border border-border text-foreground text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-            {count}
-          </span>
-        </div>
-
-        <button
-          onClick={() => onQuickAddTask(id)}
-          title="Quick add task"
-          className="w-6 h-6 rounded-lg bg-card/60 hover:bg-card border border-border/80 text-muted-foreground hover:text-gold-500 flex items-center justify-center transition-all cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      <div className="min-h-[420px] rounded-2xl flex-1 space-y-3">
-        <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-          {tasks.length === 0 ? (
-            <div className="h-40 rounded-2xl border-2 border-dashed border-border/60 flex flex-col items-center justify-center text-muted-foreground/60 text-xs font-semibold p-4 text-center">
-              <span>Drop task card here</span>
-            </div>
-          ) : (
-            tasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
-            ))
-          )}
-        </SortableContext>
-      </div>
-    </div>
-  );
-}
-
-const dropAnimationConfig: DropAnimation = {
-  sideEffects: defaultDropAnimationSideEffects({
-    styles: {
-      active: {
-        opacity: "0.4",
-      },
-    },
-  }),
-};
-
 export default function TaskKanban() {
   const [columns, setColumns] = useState<Columns>(initialTasks);
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
+  const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 4, // 4px drag constraint for immediate responsiveness
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const findColumn = (id: string): string | null => {
-    if (id in columns) return id;
-    for (const [colId, tasks] of Object.entries(columns)) {
-      if (tasks.some(t => t.id === id)) return colId;
+  // Helper to find which column a task belongs to
+  const findTaskColumn = (taskId: string): string | null => {
+    for (const [columnId, tasks] of Object.entries(columns)) {
+      if (tasks.some(t => t.id === taskId)) return columnId;
     }
     return null;
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const activeId = active.id as string;
-    
-    // Find active task
-    for (const tasks of Object.values(columns)) {
-      const task = tasks.find(t => t.id === activeId);
-      if (task) {
-        setActiveTask(task);
-        break;
-      }
+  // Drag start
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData("text/plain", taskId);
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedTaskId(taskId);
+  };
+
+  // Drag over column container
+  const handleColumnDragOver = (e: React.DragEvent, columnId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverColumnId !== columnId) {
+      setDragOverColumnId(columnId);
     }
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    const activeColumn = findColumn(activeId);
-    const overColumn = findColumn(overId);
-
-    if (!activeColumn || !overColumn || activeColumn === overColumn) {
-      return;
-    }
-
-    setColumns((prev) => {
-      const activeItems = prev[activeColumn];
-      const overItems = prev[overColumn];
-
-      const activeIndex = activeItems.findIndex(i => i.id === activeId);
-      const overIndex = overItems.findIndex(i => i.id === overId);
-
-      const movingItem = activeItems[activeIndex];
-      if (!movingItem) return prev;
-
-      let newIndex: number;
-      if (overId in prev) {
-        // We're at the root droppable of an empty or target column
-        newIndex = overItems.length;
-      } else {
-        const isBelowOverItem =
-          over &&
-          active.rect.current.translated &&
-          active.rect.current.translated.top > over.rect.top + over.rect.height;
-
-        const modifier = isBelowOverItem ? 1 : 0;
-        newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length;
-      }
-
-      return {
-        ...prev,
-        [activeColumn]: activeItems.filter(i => i.id !== activeId),
-        [overColumn]: [
-          ...overItems.slice(0, newIndex),
-          movingItem,
-          ...overItems.slice(newIndex)
-        ]
-      };
-    });
+  // Drag over a specific card
+  const handleCardDragOver = (e: React.DragEvent, taskId: string, columnId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverColumnId(columnId);
+    setDragOverTaskId(taskId);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveTask(null);
+  // Drag leave column
+  const handleColumnDragLeave = (e: React.DragEvent, columnId: string) => {
+    // Only reset if leaving the column element itself
+    if (e.currentTarget === e.target) {
+      setDragOverColumnId(null);
+    }
+  };
 
-    if (!over) return;
+  // Handle drop on column or card
+  const handleDrop = (e: React.DragEvent, targetColumnId: string, targetTaskId?: string) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    const taskId = e.dataTransfer.getData("text/plain") || draggedTaskId;
+    setDraggedTaskId(null);
+    setDragOverColumnId(null);
+    setDragOverTaskId(null);
 
-    const activeColumn = findColumn(activeId);
-    const overColumn = findColumn(overId);
+    if (!taskId) return;
 
-    if (!activeColumn || !overColumn) return;
+    const sourceColumnId = findTaskColumn(taskId);
+    if (!sourceColumnId) return;
 
-    if (activeColumn === overColumn) {
-      const items = columns[activeColumn];
-      const activeIndex = items.findIndex(i => i.id === activeId);
-      const overIndex = items.findIndex(i => i.id === overId);
+    const taskToMove = columns[sourceColumnId]?.find(t => t.id === taskId);
+    if (!taskToMove) return;
 
-      if (activeIndex !== overIndex && activeIndex !== -1 && overIndex !== -1) {
-        setColumns((prev) => ({
+    // Moving within the same column or across columns
+    setColumns(prev => {
+      const sourceList = [...prev[sourceColumnId]];
+      const targetList = sourceColumnId === targetColumnId ? sourceList : [...prev[targetColumnId]];
+
+      // Remove from source
+      const filteredSource = sourceList.filter(t => t.id !== taskId);
+
+      let updatedTargetList: Task[];
+
+      if (sourceColumnId === targetColumnId) {
+        // Reordering in same column
+        if (targetTaskId && targetTaskId !== taskId) {
+          const targetIndex = filteredSource.findIndex(t => t.id === targetTaskId);
+          if (targetIndex !== -1) {
+            filteredSource.splice(targetIndex, 0, taskToMove);
+          } else {
+            filteredSource.push(taskToMove);
+          }
+        } else {
+          filteredSource.push(taskToMove);
+        }
+        return {
           ...prev,
-          [activeColumn]: arrayMove(prev[activeColumn], activeIndex, overIndex),
-        }));
+          [sourceColumnId]: filteredSource,
+        };
+      } else {
+        // Moving to another column
+        if (targetTaskId) {
+          const targetIndex = targetList.findIndex(t => t.id === targetTaskId);
+          if (targetIndex !== -1) {
+            targetList.splice(targetIndex, 0, taskToMove);
+          } else {
+            targetList.push(taskToMove);
+          }
+        } else {
+          targetList.push(taskToMove);
+        }
+
+        return {
+          ...prev,
+          [sourceColumnId]: filteredSource,
+          [targetColumnId]: targetList,
+        };
       }
-    } else {
-      const task = columns[overColumn]?.find(t => t.id === activeId);
-      if (task) {
-        toast.success(`Task Moved to ${overColumn.replace("_", " ")}!`, {
-          description: `"${task.title}" milestone status updated across engineering board.`,
-        });
-      }
+    });
+
+    if (sourceColumnId !== targetColumnId) {
+      toast.success(`Task Moved to ${targetColumnId.replace("_", " ")}!`, {
+        description: `"${taskToMove.title}" status updated.`,
+      });
     }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTaskId(null);
+    setDragOverColumnId(null);
+    setDragOverTaskId(null);
   };
 
   const handleQuickAddTask = (columnId: string) => {
     const newTaskId = `t-${Date.now()}`;
     const newTask: Task = {
       id: newTaskId,
-      title: "New Sovereign Deliverable Sprint Task",
+      title: "New Sprint Execution Deliverable",
       priority: "HIGH",
       assignee: "FA",
       dueDate: "Sep 22",
-      project: "NexGen ERP Core",
+      project: "NexGen Platform",
       points: 5,
     };
 
@@ -336,6 +185,7 @@ export default function TaskKanban() {
 
   return (
     <div className="glass rounded-3xl border border-border/80 p-5 sm:p-6 shadow-xl space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h3 className="text-base sm:text-lg font-bold text-foreground font-heading">
@@ -350,30 +200,117 @@ export default function TaskKanban() {
         </div>
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="flex gap-4 overflow-x-auto pb-4 pt-1 custom-scrollbar">
-          {Object.keys(columns).map((status) => (
-            <KanbanColumn 
-              key={status} 
-              id={status} 
-              title={status.replace("_", " ")} 
-              count={columns[status].length}
-              tasks={columns[status]}
-              onQuickAddTask={handleQuickAddTask}
-            />
-          ))}
-        </div>
+      {/* Kanban Board Columns Container */}
+      <div className="flex gap-4 overflow-x-auto pb-4 pt-1 custom-scrollbar">
+        {Object.keys(columns).map((columnId) => {
+          const tasks = columns[columnId];
+          const isColumnOver = dragOverColumnId === columnId;
 
-        <DragOverlay dropAnimation={dropAnimationConfig}>
-          {activeTask ? <TaskCard task={activeTask} isOverlay /> : null}
-        </DragOverlay>
-      </DndContext>
+          return (
+            <div
+              key={columnId}
+              onDragOver={(e) => handleColumnDragOver(e, columnId)}
+              onDragLeave={(e) => handleColumnDragLeave(e, columnId)}
+              onDrop={(e) => handleDrop(e, columnId)}
+              className={cn(
+                "flex-1 min-w-[280px] max-w-[340px] glass rounded-3xl p-4 border shadow-md flex flex-col transition-all duration-200",
+                isColumnOver 
+                  ? "border-gold-500/80 bg-gold-500/10 ring-2 ring-gold-500/30" 
+                  : "border-border/80"
+              )}
+            >
+              {/* Column Header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/50 px-1">
+                <div className="flex items-center space-x-2">
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-foreground font-heading">
+                    {columnId.replace("_", " ")}
+                  </h3>
+                  <span className="bg-accent/80 border border-border text-foreground text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                    {tasks.length}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddTask(columnId)}
+                  title="Quick add task"
+                  className="w-6 h-6 rounded-lg bg-card/60 hover:bg-card border border-border/80 text-muted-foreground hover:text-gold-500 flex items-center justify-center transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Tasks List Container */}
+              <div className="min-h-[420px] rounded-2xl flex-1 space-y-3">
+                {tasks.length === 0 ? (
+                  <div 
+                    className={cn(
+                      "h-40 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-xs font-semibold p-4 text-center transition-all",
+                      isColumnOver 
+                        ? "border-gold-500 bg-gold-500/10 text-gold-600 dark:text-gold-400" 
+                        : "border-border/60 text-muted-foreground/60"
+                    )}
+                  >
+                    <span>{isColumnOver ? "Drop card here" : "No tasks in this stage"}</span>
+                  </div>
+                ) : (
+                  tasks.map((task) => {
+                    const isDragging = draggedTaskId === task.id;
+                    const isCardOver = dragOverTaskId === task.id;
+
+                    return (
+                      <div
+                        key={task.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task.id)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => handleCardDragOver(e, task.id, columnId)}
+                        onDrop={(e) => handleDrop(e, columnId, task.id)}
+                        className={cn(
+                          "p-4 rounded-2xl bg-card border shadow-sm transition-all duration-150 space-y-3 select-none cursor-grab active:cursor-grabbing",
+                          isDragging && "opacity-30 border-dashed border-gold-500 scale-95",
+                          isCardOver && !isDragging && "border-t-4 border-t-gold-500 ring-1 ring-gold-500/30",
+                          !isDragging && !isCardOver && "border-border/80 hover:border-gold-500/50 hover:shadow-md hover:-translate-y-0.5"
+                        )}
+                      >
+                        <div className="flex justify-between items-start gap-2">
+                          <span className={cn(
+                            "px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border",
+                            task.priority === "CRITICAL" ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" :
+                            task.priority === "HIGH" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" : 
+                            "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                          )}>
+                            {task.priority}
+                          </span>
+                          <span className="text-[10px] font-bold text-gold-600 dark:text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded-md border border-gold-500/20 font-mono">
+                            {task.points} SP
+                          </span>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-bold text-xs text-foreground group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
+                            {task.title}
+                          </h4>
+                          <p className="text-[10px] text-muted-foreground font-semibold mt-1">{task.project}</p>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
+                          <div className="flex items-center gap-1 font-semibold text-foreground/80">
+                            <Calendar className="w-3 h-3 text-muted-foreground" /> {task.dueDate}
+                          </div>
+                          <div className="w-6 h-6 rounded-xl gold-gradient flex items-center justify-center text-[10px] font-extrabold text-obsidian-950 shadow-sm">
+                            {task.assignee}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
