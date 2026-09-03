@@ -53,12 +53,11 @@ export default function ProductsPage() {
             </Button>
           </div>
           
-          <Button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-injaazh-600 hover:bg-injaazh-700 text-white rounded-2xl h-14 px-8 font-black shadow-xl shadow-injaazh-600/20 active:scale-95 transition-all"
-          >
-            <Plus className="w-5 h-5 mr-3" /> Add Product
-          </Button>
+          <Link href="/inventory/products/new">
+            <Button className="gold-gradient text-obsidian-950 rounded-2xl h-14 px-8 font-black shadow-xl shadow-gold-500/25 active:scale-95 transition-all cursor-pointer">
+              <Plus className="w-5 h-5 mr-2" /> Add Product
+            </Button>
+          </Link>
         </div>
       </div>
 
