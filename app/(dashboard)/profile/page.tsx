@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import {
   User, Mail, Shield, Calendar, MapPin, Phone, Briefcase, Camera,
   ShieldCheck, Fingerprint, History, Edit3, Globe, Lock, Sparkles,
   Key, Laptop, Smartphone, Monitor, CheckCircle2, ArrowRight,
   LogOut, RefreshCw, Layers, AlertCircle, Building2, Check,
-  Sliders, Bell, Save, X, Eye, FileDown
+  Sliders, Bell, Save, X, Eye, FileDown, Clock, Cpu, Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,26 +64,32 @@ const initialSessions: DeviceSession[] = [
 ];
 
 const rbacPrivileges = [
-  { module: "General Ledger & Fiscal Treasury", access: "Full Unrestricted (L5)", status: "Granted" },
-  { module: "Procurement & Sourcing Contracts", access: "Authorize & Sign (L5)", status: "Granted" },
-  { module: "Manufacturing & Robotic MES", access: "Plant Supervisor (L5)", status: "Granted" },
-  { module: "Inventory Vaults & Safety Buffers", access: "Master Allocation (L5)", status: "Granted" },
-  { module: "AI Hub & Gemini Neural Models", access: "Model Orchestrator (L5)", status: "Granted" },
-  { module: "Project Portfolio & Sprint Gates", access: "Program Director (L5)", status: "Granted" },
+  { module: "General Ledger & Fiscal Treasury", access: "Full Unrestricted (L5)", status: "Granted", icon: Layers },
+  { module: "Procurement & Sourcing Contracts", access: "Authorize & Sign (L5)", status: "Granted", icon: Building2 },
+  { module: "Manufacturing & Robotic MES", access: "Plant Supervisor (L5)", status: "Granted", icon: Cpu },
+  { module: "Inventory Vaults & Safety Buffers", access: "Master Allocation (L5)", status: "Granted", icon: ShieldCheck },
+  { module: "AI Hub & Gemini Neural Models", access: "Model Orchestrator (L5)", status: "Granted", icon: Sparkles },
+  { module: "Project Portfolio & Sprint Gates", access: "Program Director (L5)", status: "Granted", icon: Briefcase },
 ];
 
 export default function ProfilePage() {
   const { data: session } = useSession();
   const authUser = session?.user;
+  const userRole = (authUser as any)?.role || "ADMIN";
 
-  // Profile Form States
-  const [name, setName] = useState(authUser?.name || "Md Mamun Hossain");
-  const [email, setEmail] = useState(authUser?.email || "mamun@injaazh.com");
+  // Dynamic Profile States (Syncs seamlessly with logged-in user)
+  const [name, setName] = useState(authUser?.name || "Rahman Ahmed");
+  const [email, setEmail] = useState(authUser?.email || "admin@injaazh.com");
   const [jobTitle, setJobTitle] = useState("Chief Executive Officer & Chief Architect");
   const [department, setDepartment] = useState("Executive Board & Core Systems");
   const [phone, setPhone] = useState("+880 1712-345678");
-  const [location, setLocation] = useState("Dhaka Node • Silicon Valley HQ");
-  const [bio, setBio] = useState("Leading high-velocity enterprise AI and ERP architecture. Overseeing sovereign multi-tenant cloud operations and cryptographic general ledger integrity.");
+  const [location, setLocation] = useState("Dhaka Station Node • Silicon Valley HQ");
+  const [bio, setBio] = useState("Leading high-velocity enterprise AI and ERP architecture. Overseeing sovereign multi-tenant cloud operations, autonomous agent workflows, and cryptographic general ledger integrity.");
+
+  useEffect(() => {
+    if (authUser?.name) setName(authUser.name);
+    if (authUser?.email) setEmail(authUser.email);
+  }, [authUser]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -125,30 +131,32 @@ export default function ProfilePage() {
 
   const handleExportAudit = () => {
     toast.success("Identity Security Audit Log Exported!", {
-      description: "Signed cryptographic CSV security log downloaded.",
+      description: "Signed cryptographic CSV security audit log downloaded.",
     });
   };
+
+  const avatarInitial = (name || "R").charAt(0).toUpperCase();
 
   return (
     <div className="space-y-6 pb-16 max-w-[1600px] mx-auto animate-in fade-in duration-500">
       {/* Cinematic Sovereign Hero Banner */}
-      <div className="glass-strong rounded-3xl border border-border/80 shadow-2xl relative overflow-hidden p-6 sm:p-8">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/15 rounded-full blur-[100px] pointer-events-none" />
+      <div className="glass-strong rounded-3xl border border-border shadow-xl relative overflow-hidden p-6 sm:p-8 bg-card/90">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           {/* Avatar & User Details */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
             <div className="relative group/avatar shrink-0">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl gold-gradient p-1 shadow-2xl shadow-gold-500/30">
-                <div className="w-full h-full rounded-[22px] bg-obsidian-950 flex items-center justify-center text-gold-500 font-heading font-black text-3xl sm:text-4xl shadow-inner">
-                  {name.charAt(0) || "M"}
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl gold-gradient p-1 shadow-2xl shadow-gold-500/25">
+                <div className="w-full h-full rounded-[22px] bg-obsidian-950 flex items-center justify-center text-gold-400 font-heading font-black text-3xl sm:text-4xl shadow-inner border border-gold-500/20">
+                  {avatarInitial}
                 </div>
               </div>
               <button 
                 title="Change Avatar"
                 onClick={() => toast.info("Profile Avatar Customizer: Upload feature initialized.")}
-                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl bg-card border border-border shadow-lg flex items-center justify-center text-gold-500 hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl bg-card border border-border shadow-md flex items-center justify-center text-gold-600 dark:text-gold-400 hover:scale-110 active:scale-95 transition-all cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
               </button>
@@ -156,11 +164,11 @@ export default function ProfilePage() {
 
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <span className="text-[10px] font-extrabold text-gold-600 dark:text-gold-400 bg-gold-500/15 px-2.5 py-0.5 rounded-full border border-gold-500/30 uppercase tracking-widest font-mono flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-gold-500" /> Sovereign Super-Admin (Level 5)
+                <span className="text-[11px] font-extrabold text-gold-700 dark:text-gold-300 bg-gold-500/15 dark:bg-gold-500/20 px-3 py-1 rounded-full border border-gold-500/40 uppercase tracking-wider font-mono flex items-center gap-1.5 shadow-sm">
+                  <Shield className="w-3.5 h-3.5 text-gold-600 dark:text-gold-400" /> Sovereign {userRole} (Level 5)
                 </span>
-                <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-widest flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 dark:bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/40 uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                   Active Identity
                 </span>
               </div>
@@ -169,13 +177,13 @@ export default function ProfilePage() {
                 {name}
               </h1>
 
-              <p className="text-xs sm:text-sm font-semibold text-muted-foreground">
+              <p className="text-xs sm:text-sm font-semibold text-foreground/80">
                 {jobTitle} • <strong className="text-foreground">{department}</strong>
               </p>
 
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-muted-foreground pt-1">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs font-medium text-muted-foreground pt-1">
                 <span className="flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-gold-500" /> {email}
+                  <Mail className="w-3.5 h-3.5 text-gold-600 dark:text-gold-400" /> {email}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-blue-500" /> {location}
@@ -232,7 +240,7 @@ export default function ProfilePage() {
                 "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 border",
                 activeTab === tab.id
                   ? "gold-gradient text-obsidian-950 border-gold-400 shadow-md font-black scale-102"
-                  : "bg-card/60 hover:bg-card border-border/70 text-muted-foreground hover:text-foreground"
+                  : "bg-card hover:bg-accent border-border text-muted-foreground hover:text-foreground"
               )}
             >
               <tab.icon className="w-3.5 h-3.5" />
@@ -246,20 +254,21 @@ export default function ProfilePage() {
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
           {/* Main Info / Edit Form */}
-          <div className="lg:col-span-2 glass-strong rounded-3xl border border-border/80 p-5 sm:p-7 shadow-xl space-y-5">
+          <div className="lg:col-span-2 glass-strong rounded-3xl border border-border p-6 sm:p-7 shadow-xl space-y-5 bg-card/90">
             <div className="flex items-center justify-between pb-3 border-b border-border/60">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gold-500/15 text-gold-500 flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-gold-500/15 text-gold-600 dark:text-gold-400 flex items-center justify-center font-bold border border-gold-500/20">
                   <Briefcase className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground font-heading">
                     {isEditing ? "Modify Executive Information" : "Executive Personal Matrix"}
                   </h3>
-                  <p className="text-[10px] text-muted-foreground">Authorized identity credentials and operational coordinates</p>
+                  <p className="text-xs text-muted-foreground">Authorized identity credentials and operational coordinates</p>
                 </div>
               </div>
-              <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+              <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 Verified Identity
               </span>
             </div>
@@ -268,68 +277,68 @@ export default function ProfilePage() {
               <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-foreground/90 uppercase tracking-wider ml-1">Full Legal Name</Label>
+                    <Label className="text-xs font-bold text-foreground uppercase tracking-wider ml-1">Full Legal Name</Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="h-11 bg-background/60 border-border/80 rounded-2xl text-xs font-semibold"
+                      className="h-11 bg-background border-border rounded-2xl text-xs font-semibold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-foreground/90 uppercase tracking-wider ml-1">Enterprise Email</Label>
+                    <Label className="text-xs font-bold text-foreground uppercase tracking-wider ml-1">Enterprise Email</Label>
                     <Input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-11 bg-background/60 border-border/80 rounded-2xl text-xs font-semibold"
+                      className="h-11 bg-background border-border rounded-2xl text-xs font-semibold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-foreground/90 uppercase tracking-wider ml-1">Executive Title</Label>
+                    <Label className="text-xs font-bold text-foreground uppercase tracking-wider ml-1">Executive Title</Label>
                     <Input
                       value={jobTitle}
                       onChange={(e) => setJobTitle(e.target.value)}
-                      className="h-11 bg-background/60 border-border/80 rounded-2xl text-xs font-semibold"
+                      className="h-11 bg-background border-border rounded-2xl text-xs font-semibold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-foreground/90 uppercase tracking-wider ml-1">Department</Label>
+                    <Label className="text-xs font-bold text-foreground uppercase tracking-wider ml-1">Department</Label>
                     <Input
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
-                      className="h-11 bg-background/60 border-border/80 rounded-2xl text-xs font-semibold"
+                      className="h-11 bg-background border-border rounded-2xl text-xs font-semibold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-foreground/90 uppercase tracking-wider ml-1">Contact Phone</Label>
+                    <Label className="text-xs font-bold text-foreground uppercase tracking-wider ml-1">Contact Phone</Label>
                     <Input
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="h-11 bg-background/60 border-border/80 rounded-2xl text-xs font-semibold"
+                      className="h-11 bg-background border-border rounded-2xl text-xs font-semibold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-foreground/90 uppercase tracking-wider ml-1">Primary Node Location</Label>
+                    <Label className="text-xs font-bold text-foreground uppercase tracking-wider ml-1">Primary Node Location</Label>
                     <Input
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="h-11 bg-background/60 border-border/80 rounded-2xl text-xs font-semibold"
+                      className="h-11 bg-background border-border rounded-2xl text-xs font-semibold"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground/90 uppercase tracking-wider ml-1">Executive Biography</Label>
+                  <Label className="text-xs font-bold text-foreground uppercase tracking-wider ml-1">Executive Biography</Label>
                   <textarea
                     rows={3}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    className="w-full bg-background/60 border border-border/80 rounded-2xl p-3 text-xs font-medium text-foreground outline-none focus:border-gold-500"
+                    className="w-full bg-background border border-border rounded-2xl p-3 text-xs font-medium text-foreground outline-none focus:border-gold-500"
                   />
                 </div>
 
@@ -353,69 +362,86 @@ export default function ProfilePage() {
               </form>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3.5 rounded-2xl bg-card/60 border border-border/70 space-y-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Full Name</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-sm">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Full Name</span>
                     <p className="text-sm font-extrabold text-foreground">{name}</p>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-card/60 border border-border/70 space-y-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Corporate Email</span>
+                  <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-sm">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Corporate Email</span>
                     <p className="text-sm font-extrabold text-foreground">{email}</p>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-card/60 border border-border/70 space-y-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Executive Role</span>
+                  <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-sm">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Executive Role</span>
                     <p className="text-sm font-extrabold text-foreground">{jobTitle}</p>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-card/60 border border-border/70 space-y-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Assigned Department</span>
+                  <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-sm">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Assigned Department</span>
                     <p className="text-sm font-extrabold text-foreground">{department}</p>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-card/60 border border-border/70 space-y-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Contact Phone</span>
+                  <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-sm">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Phone</span>
                     <p className="text-sm font-extrabold text-foreground">{phone}</p>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-card/60 border border-border/70 space-y-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Primary Station Node</span>
+                  <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-sm">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Primary Station Node</span>
                     <p className="text-sm font-extrabold text-foreground">{location}</p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-card/60 border border-border/70 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Executive Biography</span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{bio}</p>
+                <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-sm">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Executive Biography</span>
+                  <p className="text-xs font-medium text-foreground/90 leading-relaxed">{bio}</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right Column: Global Node Clearance */}
-          <div className="space-y-6">
-            <div className="glass rounded-3xl border border-border/80 p-5 sm:p-6 shadow-xl space-y-4 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
+          {/* Right Column: Global Node Clearance & Quick Telemetry */}
+          <div className="space-y-4">
+            <div className="glass rounded-3xl border border-border p-6 shadow-xl space-y-4 bg-card/90">
               <div className="flex items-center gap-2.5 pb-3 border-b border-border/60">
-                <Globe className="w-5 h-5 text-gold-500" />
+                <Globe className="w-5 h-5 text-gold-600 dark:text-gold-400" />
                 <h3 className="text-sm font-bold text-foreground font-heading">Global Node Access</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Your sovereign credential holds unrestricted Level 5 multi-tenant clearance across Dhaka Central, Silicon Valley Alpha, Frankfurt Beta, and Singapore Gamma nodes.
               </p>
-              <div className="pt-2 border-t border-border/60 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Security Clearance:</span>
-                  <span className="font-bold text-gold-500">Level 5 (Unrestricted)</span>
+              <div className="pt-2 border-t border-border/60 space-y-2.5 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-semibold">Security Clearance:</span>
+                  <span className="font-extrabold text-gold-600 dark:text-gold-400">Level 5 (Super-Admin)</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Multi-Tenant Vault:</span>
-                  <span className="font-semibold text-emerald-500">Enterprise Core</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-semibold">Multi-Tenant Vault:</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">Enterprise Core</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Audit Signature:</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">SHA-256: 8f9b...a47c</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-semibold">Audit Signature:</span>
+                  <span className="font-mono text-[10px] text-muted-foreground bg-accent/60 px-2 py-0.5 rounded border border-border">SHA-256: 8f9b...a47c</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Executive Status Card */}
+            <div className="glass rounded-3xl border border-border p-6 shadow-xl space-y-3 bg-card/90">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Identity Telemetry</span>
+                <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">99.99% Uptime</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-center pt-1">
+                <div className="p-2.5 rounded-xl bg-background border border-border">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">Active Roles</span>
+                  <span className="text-sm font-black font-heading text-foreground">Sovereign</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-background border border-border">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">Hardware Key</span>
+                  <span className="text-sm font-black font-heading text-emerald-500">FIDO2 Active</span>
                 </div>
               </div>
             </div>
@@ -428,18 +454,18 @@ export default function ProfilePage() {
         <div className="space-y-6 animate-in fade-in duration-300">
           {/* Security Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="glass rounded-3xl p-5 border border-border/80 shadow-md space-y-3">
+            <div className="glass rounded-3xl p-5 border border-border shadow-md space-y-3 bg-card">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
                   <Fingerprint className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
                   Active
                 </span>
               </div>
               <div>
                 <h4 className="font-bold text-sm text-foreground">Biometric Passkey / WebAuthn</h4>
-                <p className="text-[10px] text-muted-foreground mt-0.5">FIDO2 hardware biometric signature enabled</p>
+                <p className="text-xs text-muted-foreground mt-0.5">FIDO2 hardware biometric signature enabled</p>
               </div>
               <Button
                 onClick={handleTestPasskey}
@@ -451,64 +477,64 @@ export default function ProfilePage() {
               </Button>
             </div>
 
-            <div className="glass rounded-3xl p-5 border border-border/80 shadow-md space-y-3">
+            <div className="glass rounded-3xl p-5 border border-border shadow-md space-y-3 bg-card">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
                   <Lock className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold text-blue-500 bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
+                <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/30">
                   AES-256
                 </span>
               </div>
               <div>
                 <h4 className="font-bold text-sm text-foreground">Hardware Cryptographic Keys</h4>
-                <p className="text-[10px] text-muted-foreground mt-0.5">End-to-end ledger signing & encryption</p>
+                <p className="text-xs text-muted-foreground mt-0.5">End-to-end ledger signing & encryption</p>
               </div>
-              <div className="font-mono text-[10px] p-2 bg-background/60 rounded-xl text-muted-foreground truncate border border-border/60">
+              <div className="font-mono text-[11px] p-2 bg-background rounded-xl text-foreground font-semibold truncate border border-border">
                 0x9F42A7C8...3B11D4
               </div>
             </div>
 
-            <div className="glass rounded-3xl p-5 border border-border/80 shadow-md space-y-3">
+            <div className="glass rounded-3xl p-5 border border-border shadow-md space-y-3 bg-card">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-gold-500/15 text-gold-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-gold-500/15 text-gold-600 dark:text-gold-400 flex items-center justify-center border border-gold-500/20">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold text-gold-500 bg-gold-500/10 px-2.5 py-0.5 rounded-full border border-gold-500/20">
+                <span className="text-[10px] font-extrabold text-gold-600 dark:text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded-full border border-gold-500/30">
                   Strict
                 </span>
               </div>
               <div>
                 <h4 className="font-bold text-sm text-foreground">Zero-Trust Telemetry</h4>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Continuous identity behavioral validation</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Continuous identity behavioral validation</p>
               </div>
-              <div className="text-[11px] text-emerald-500 font-bold flex items-center gap-1.5 pt-1">
+              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 pt-1">
                 <CheckCircle2 className="w-4 h-4" /> 100% Zero-Trust Compliance
               </div>
             </div>
           </div>
 
           {/* Active Device Sessions Fleet */}
-          <div className="glass-strong rounded-3xl border border-border/80 p-5 sm:p-7 shadow-xl space-y-4">
+          <div className="glass-strong rounded-3xl border border-border p-5 sm:p-7 shadow-xl space-y-4 bg-card">
             <div className="flex items-center justify-between pb-3 border-b border-border/60">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-500 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold border border-purple-500/20">
                   <Monitor className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground font-heading">Active Authorized Device Fleet</h3>
-                  <p className="text-[10px] text-muted-foreground">Manage authorized workstations and mobile tokens logged into your identity</p>
+                  <p className="text-xs text-muted-foreground">Manage authorized workstations and mobile tokens logged into your identity</p>
                 </div>
               </div>
               <span className="text-xs font-bold text-muted-foreground">{sessions.length} Authorized</span>
             </div>
 
-            <div className="border border-border/80 rounded-2xl overflow-hidden divide-y divide-border/60 bg-card/40">
+            <div className="border border-border rounded-2xl overflow-hidden divide-y divide-border/60 bg-background/50">
               {sessions.map((session) => (
                 <div key={session.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground shrink-0 mt-0.5">
-                      {session.type === "desktop" ? <Monitor className="w-5 h-5 text-gold-500" /> :
+                    <div className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground shrink-0 mt-0.5 shadow-sm">
+                      {session.type === "desktop" ? <Monitor className="w-5 h-5 text-gold-600 dark:text-gold-400" /> :
                        session.type === "laptop" ? <Laptop className="w-5 h-5 text-blue-500" /> :
                        <Smartphone className="w-5 h-5 text-emerald-500" />}
                     </div>
@@ -517,7 +543,7 @@ export default function ProfilePage() {
                       <div className="flex items-center gap-2">
                         <h4 className="font-extrabold text-sm text-foreground">{session.device}</h4>
                         {session.isCurrent && (
-                          <span className="text-[9px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25">
+                          <span className="text-[9px] font-black uppercase text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30">
                             Current Device
                           </span>
                         )}
@@ -525,8 +551,8 @@ export default function ProfilePage() {
                       <p className="text-xs text-muted-foreground">
                         {session.os} • {session.browser}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        📍 {session.location} ({session.ip}) • <span className="font-semibold text-foreground">{session.lastActive}</span>
+                      <p className="text-[11px] text-muted-foreground">
+                        📍 {session.location} ({session.ip}) • <span className="font-bold text-foreground">{session.lastActive}</span>
                       </p>
                     </div>
                   </div>
@@ -537,7 +563,7 @@ export default function ProfilePage() {
                       onClick={() => handleRevokeSession(session.id)}
                       className="h-9 px-3 rounded-xl text-xs font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 border-border self-end sm:self-auto cursor-pointer"
                     >
-                      <LogOut className="w-3.5 h-3.5 mr-1.5" /> Revoke
+                      <LogOut className="w-3.5 h-3.5 mr-1.5" /> Revoke Session
                     </Button>
                   )}
                 </div>
@@ -549,25 +575,25 @@ export default function ProfilePage() {
 
       {/* TAB 3: RBAC AUTHORITY & PRIVILEGES */}
       {activeTab === "rbac" && (
-        <div className="glass-strong rounded-3xl border border-border/80 p-5 sm:p-7 shadow-xl space-y-5 animate-in fade-in duration-300">
+        <div className="glass-strong rounded-3xl border border-border p-5 sm:p-7 shadow-xl space-y-5 animate-in fade-in duration-300 bg-card">
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gold-500/15 text-gold-500 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-xl bg-gold-500/15 text-gold-600 dark:text-gold-400 flex items-center justify-center font-bold border border-gold-500/20">
                 <Key className="w-4 h-4" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground font-heading">Role-Based Access Control (RBAC) Matrix</h3>
-                <p className="text-[10px] text-muted-foreground">Enterprise module authority gates and cryptographic signing privileges</p>
+                <p className="text-xs text-muted-foreground">Enterprise module authority gates and cryptographic signing privileges</p>
               </div>
             </div>
-            <span className="text-[10px] font-extrabold text-gold-600 dark:text-gold-400 bg-gold-500/15 px-2.5 py-0.5 rounded-full border border-gold-500/30 font-mono">
+            <span className="text-[10px] font-extrabold text-gold-700 dark:text-gold-300 bg-gold-500/15 px-3 py-1 rounded-full border border-gold-500/30 font-mono">
               ROOT CLEARANCE
             </span>
           </div>
 
-          <div className="border border-border/80 rounded-2xl overflow-hidden bg-card/40">
+          <div className="border border-border rounded-2xl overflow-hidden bg-background/50">
             <table className="w-full text-left text-xs">
-              <thead className="bg-card/80 border-b border-border/80 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+              <thead className="bg-card border-b border-border text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                 <tr>
                   <th className="py-3.5 pl-4">System Module</th>
                   <th className="py-3.5">Assigned Authority Level</th>
@@ -577,15 +603,17 @@ export default function ProfilePage() {
               <tbody className="divide-y divide-border/60">
                 {rbacPrivileges.map((item, idx) => (
                   <tr key={idx} className="hover:bg-accent/40 transition-colors">
-                    <td className="py-3.5 pl-4 font-bold text-foreground flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <td className="py-3.5 pl-4 font-bold text-foreground flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-gold-500/10 flex items-center justify-center text-gold-600 dark:text-gold-400 border border-gold-500/20">
+                        <item.icon className="w-3.5 h-3.5" />
+                      </div>
                       <span>{item.module}</span>
                     </td>
-                    <td className="py-3.5 font-semibold text-gold-600 dark:text-gold-400">
+                    <td className="py-3.5 font-bold text-gold-600 dark:text-gold-400">
                       {item.access}
                     </td>
                     <td className="py-3.5 pr-4 text-right">
-                      <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 inline-block">
+                      <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 px-2.5 py-1 rounded-full border border-emerald-500/30 inline-block">
                         {item.status}
                       </span>
                     </td>
@@ -599,24 +627,24 @@ export default function ProfilePage() {
 
       {/* TAB 4: WORKSPACE & AI PREFERENCES */}
       {activeTab === "preferences" && (
-        <div className="glass-strong rounded-3xl border border-border/80 p-5 sm:p-7 shadow-xl space-y-6 animate-in fade-in duration-300">
+        <div className="glass-strong rounded-3xl border border-border p-5 sm:p-7 shadow-xl space-y-6 animate-in fade-in duration-300 bg-card">
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-500 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold border border-purple-500/20">
                 <Sliders className="w-4 h-4" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground font-heading">Workspace & AI Copilot Preferences</h3>
-                <p className="text-[10px] text-muted-foreground">Configure AI telemetry prompts, currency defaults, and system notifications</p>
+                <p className="text-xs text-muted-foreground">Configure AI telemetry prompts, currency defaults, and system notifications</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-card/60 border border-border/70 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-card border border-border flex items-center justify-between shadow-sm">
               <div className="space-y-0.5">
-                <span className="font-bold text-foreground block">Proactive AI Copilot Inquiries</span>
-                <p className="text-muted-foreground text-[11px]">Enable Gemini 1.5 Pro to suggest automated POs and risk mitigations</p>
+                <span className="font-bold text-foreground block text-sm">Proactive AI Copilot Inquiries</span>
+                <p className="text-muted-foreground text-xs">Enable Gemini 1.5 Pro to suggest automated POs and risk mitigations</p>
               </div>
               <input
                 type="checkbox"
@@ -626,15 +654,15 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div className="p-4 rounded-2xl bg-card/60 border border-border/70 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-card border border-border flex items-center justify-between shadow-sm">
               <div className="space-y-0.5">
-                <span className="font-bold text-foreground block">Primary Fiscal Currency</span>
-                <p className="text-muted-foreground text-[11px]">Default denomination displayed across financial statements</p>
+                <span className="font-bold text-foreground block text-sm">Primary Fiscal Currency</span>
+                <p className="text-muted-foreground text-xs">Default denomination displayed across financial statements</p>
               </div>
               <select
                 value={preferredCurrency}
                 onChange={(e) => setPreferredCurrency(e.target.value)}
-                className="bg-background border border-border/80 rounded-xl h-10 px-3 font-bold text-foreground outline-none focus:border-gold-500"
+                className="bg-background border border-border rounded-xl h-10 px-3 font-bold text-foreground outline-none focus:border-gold-500"
               >
                 <option value="USD ($)">USD ($) — United States Dollar</option>
                 <option value="EUR (€)">EUR (€) — Euro</option>
@@ -643,10 +671,10 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            <div className="p-4 rounded-2xl bg-card/60 border border-border/70 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-card border border-border flex items-center justify-between shadow-sm">
               <div className="space-y-0.5">
-                <span className="font-bold text-foreground block">Real-time Double-Entry Ledger Rebalancing Sound</span>
-                <p className="text-muted-foreground text-[11px]">Play subtle audio haptic confirmation on verified audit reconciliations</p>
+                <span className="font-bold text-foreground block text-sm">Real-time Double-Entry Ledger Rebalancing Sound</span>
+                <p className="text-muted-foreground text-xs">Play subtle audio haptic confirmation on verified audit reconciliations</p>
               </div>
               <input
                 type="checkbox"
