@@ -15,43 +15,13 @@ interface KPICardProps {
 }
 
 export default function KPICard({ title, value, change, trend, icon: Icon, sparkline }: KPICardProps) {
+  const [mounted, setMounted] = useState(false);
   const uniqueId = useId().replace(/:/g, "_");
   const safeGradId = `sparkGrad_${title.replace(/[^a-zA-Z0-9]/g, "_")}_${uniqueId}`;
 
-  // Extract prefix (e.g. "$"), suffix (e.g. "%" or " Staff"), and numeric value
-  const prefix = value.match(/^[^\d]*/)?.[0] || "";
-  const suffix = value.match(/[^\d.,]*$/)?.[0] || "";
-  const numericStr = value.replace(/^[^\d]*/, "").replace(/[^\d.,]*$/, "").replace(/,/g, "");
-  const numericValue = parseFloat(numericStr) || 0;
-  const hasDecimals = numericStr.includes(".");
-
-  const [displayValue, setDisplayValue] = useState(0);
-
   useEffect(() => {
-    let start = 0;
-    const duration = 700;
-    const startTime = performance.now();
-
-    function animate(currentTime: number) {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = start + (numericValue - start) * eased;
-      setDisplayValue(current);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    }
-
-    requestAnimationFrame(animate);
-  }, [numericValue]);
-
-  const formattedNumber = hasDecimals
-    ? displayValue.toFixed(1)
-    : Math.round(displayValue).toLocaleString();
-
-  const formattedValue = `${prefix}${formattedNumber}${suffix}`;
+    setMounted(true);
+  }, []);
 
   return (
     <div className="glass rounded-2xl p-5 relative overflow-hidden group hover:border-gold-500/40 hover:-translate-y-0.5 transition-all duration-300 shadow-md">
@@ -76,31 +46,35 @@ export default function KPICard({ title, value, change, trend, icon: Icon, spark
         <div className="mb-2">
           <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold mb-1">{title}</p>
           <p className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading tabular-nums tracking-tight">
-            {formattedValue}
+            {value}
           </p>
         </div>
 
         <div className="h-[44px] -mx-2 -mb-2 mt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={sparkline.map((v, i) => ({ v, i }))} margin={{ top: 2, right: 2, left: 2, bottom: 0 }}>
-              <defs>
-                <linearGradient id={safeGradId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#D4A853" stopOpacity={0.4} />
-                  <stop offset="60%" stopColor="#D4A853" stopOpacity={0.12} />
-                  <stop offset="100%" stopColor="#D4A853" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <Area 
-                type="monotone" 
-                dataKey="v" 
-                stroke="#D4A853" 
-                strokeWidth={2} 
-                fill={`url(#${safeGradId})`} 
-                dot={false} 
-                isAnimationActive={true}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={sparkline.map((v, i) => ({ v, i }))} margin={{ top: 2, right: 2, left: 2, bottom: 0 }}>
+                <defs>
+                  <linearGradient id={safeGradId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#D4A853" stopOpacity={0.4} />
+                    <stop offset="60%" stopColor="#D4A853" stopOpacity={0.12} />
+                    <stop offset="100%" stopColor="#D4A853" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <Area 
+                  type="monotone" 
+                  dataKey="v" 
+                  stroke="#D4A853" 
+                  strokeWidth={2} 
+                  fill={`url(#${safeGradId})`} 
+                  dot={false} 
+                  isAnimationActive={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full bg-gold-500/5 rounded-lg" />
+          )}
         </div>
       </div>
     </div>
