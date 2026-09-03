@@ -23,7 +23,7 @@ async function main() {
   // 2. Users (with hashed passwords)
   const hashedPassword = await bcrypt.hash("password123", 10);
   const users = [
-    { name: "Rahman Ahmed", email: "admin@injaazh.com", role: "ADMIN" as UserRole },
+    { name: "Md Mamun Hossain", email: "admin@injaazh.com", role: "ADMIN" as UserRole },
     { name: "Farhan Hossain", email: "farhan@apex-industries.com", role: "ADMIN" as UserRole },
     { name: "Nusrat Jahan", email: "nusrat.hr@apex-industries.com", role: "MANAGER" as UserRole },
     { name: "Karim Uddin", email: "karim.sales@apex-industries.com", role: "MANAGER" as UserRole },

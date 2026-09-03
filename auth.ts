@@ -26,8 +26,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Demo users fallback for development and when database is offline
           const DEMO_USERS: Record<string, { name: string; email: string; role: string; tenantId: string; tenantSlug: string; permissions: string[] }> = {
             "admin@injaazh.com": {
-              name: "Rahman Ahmed",
+              name: "Md Mamun Hossain",
               email: "admin@injaazh.com",
+              role: "ADMIN",
+              tenantId: "demo-tenant-1",
+              tenantSlug: "apex-industries",
+              permissions: ["ALL"],
+            },
+            "mamun@injaazh.com": {
+              name: "Md Mamun Hossain",
+              email: "mamun@injaazh.com",
               role: "ADMIN",
               tenantId: "demo-tenant-1",
               tenantSlug: "apex-industries",

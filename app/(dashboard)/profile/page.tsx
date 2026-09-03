@@ -78,8 +78,8 @@ export default function ProfilePage() {
   const userRole = (authUser as any)?.role || "ADMIN";
 
   // Dynamic Profile States (Syncs seamlessly with logged-in user)
-  const [name, setName] = useState(authUser?.name || "Rahman Ahmed");
-  const [email, setEmail] = useState(authUser?.email || "admin@injaazh.com");
+  const [name, setName] = useState(authUser?.name || "Md Mamun Hossain");
+  const [email, setEmail] = useState(authUser?.email || "mamun@injaazh.com");
   const [jobTitle, setJobTitle] = useState("Chief Executive Officer & Chief Architect");
   const [department, setDepartment] = useState("Executive Board & Core Systems");
   const [phone, setPhone] = useState("+880 1712-345678");
