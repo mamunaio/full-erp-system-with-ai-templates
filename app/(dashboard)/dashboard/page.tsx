@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { motion } from "framer-motion";
 import { 
-  Wallet, Users, BarChart3, Package, Sparkles, 
-  ArrowRight, ShieldCheck, Activity, TrendingUp,
-  HeartHandshake, ShoppingCart, Factory, Kanban,
-  Plus, Calendar, Landmark, CheckCircle2, Clock
+  Wallet, Users, Package,
+  ArrowRight, Landmark, HeartHandshake
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 import AICommandBar from "@/components/dashboard/AICommandBar";
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
@@ -20,15 +14,6 @@ import RevenueChart from "@/components/dashboard/RevenueChart";
 import QuickActions from "@/components/dashboard/QuickActions";
 import TaskWidget from "@/components/dashboard/TaskWidget";
 import TreasuryMiniCard from "@/components/dashboard/TreasuryMiniCard";
-
-const stagger = { 
-  hidden: { opacity: 0 }, 
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } } 
-};
-const fadeUp = { 
-  hidden: { opacity: 0, y: 20, scale: 0.98 }, 
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } 
-};
 
 const revenueData = [
   { month: "Jan", revenue: 45000, expense: 32000 },
@@ -74,40 +59,12 @@ const aiDashboardSuggestions = [
 ];
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 250);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-2xl border-2 border-gold-500/20" />
-            <div className="absolute inset-0 rounded-2xl border-2 border-transparent border-t-gold-500 animate-spin" />
-            <div className="absolute inset-1.5 rounded-xl bg-gold-500/10 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-gold-500 animate-pulse" />
-            </div>
-          </div>
-          <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Calibrating Enterprise Cockpit...</span>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
-    <motion.div 
-      variants={stagger} 
-      initial="hidden" 
-      animate="show" 
-      className="space-y-6 pb-12 max-w-[1600px] mx-auto"
-    >
+    <div className="space-y-6 pb-12 max-w-[1600px] mx-auto animate-in fade-in duration-500">
       {/* Welcome & Command Center Header */}
-      <motion.div variants={fadeUp}>
+      <div>
         <div className="glass-strong rounded-3xl p-5 sm:p-7 md:p-8 relative overflow-hidden border border-border/80 shadow-xl">
           <div className="absolute top-0 right-0 w-80 h-80 bg-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-60 h-60 bg-emerald-500/5 blur-[80px] pointer-events-none" />
@@ -150,15 +107,15 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* AI Pulse Command Launcher */}
-      <motion.div variants={fadeUp}>
+      <div>
         <AICommandBar suggestions={aiDashboardSuggestions} />
-      </motion.div>
+      </div>
 
       {/* Primary KPI Matrix */}
-      <motion.div variants={fadeUp}>
+      <div>
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard 
             title="Consolidated Revenue (YTD)" 
@@ -193,10 +150,10 @@ export default function DashboardPage() {
             sparkline={[85, 87, 88, 89, 90, 90, 91]} 
           />
         </div>
-      </motion.div>
+      </div>
 
       {/* Core Operational Analytics & Insights */}
-      <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Revenue & Fiscal Chart + Smart Alerts */}
         <div className="lg:col-span-2 space-y-6">
           <RevenueChart data={revenueData} />
@@ -209,7 +166,7 @@ export default function DashboardPage() {
           <TaskWidget data={tasks} />
           <TreasuryMiniCard />
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

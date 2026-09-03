@@ -173,10 +173,6 @@ export default function Sidebar() {
             )}
 
             {section.items.map((item) => {
-              if (userRole === "USER" && item.module !== "dashboard") {
-                return null;
-              }
-
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 
               // Collapsed Mode Squircle Button
