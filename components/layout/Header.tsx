@@ -156,7 +156,7 @@ export default function Header() {
             <div className="flex items-center gap-3 p-1 rounded-2xl hover:bg-card/70 border border-transparent hover:border-border/60 transition-all cursor-pointer group select-none">
               <div className="hidden md:flex flex-col items-end">
                 <span className="text-xs font-bold text-foreground leading-none mb-1 group-hover:text-gold-500 transition-colors">
-                  {session?.user?.name || "Enterprise User"}
+                  {session?.user?.name === "Rahman Ahmed" || session?.user?.email === "admin@injaazh.com" || session?.user?.email === "mamun@injaazh.com" ? "Md Mamun Hossain" : (session?.user?.name || "Md Mamun Hossain")}
                 </span>
                 <span className="text-[9px] font-extrabold text-gold-600 dark:text-gold-400 uppercase tracking-widest bg-gold-500/10 px-1.5 py-0.2 rounded border border-gold-500/25">
                   {userRole}
@@ -165,7 +165,7 @@ export default function Header() {
               <div className="relative">
                 <div className="w-10 h-10 rounded-xl gold-gradient p-[2px] shadow-md shadow-gold-500/20 group-hover:scale-105 transition-transform">
                   <div className="w-full h-full rounded-[10px] bg-card flex items-center justify-center text-gold-500 font-extrabold text-sm border border-border/40">
-                    {session?.user?.name?.[0] || "U"}
+                    {(session?.user?.name === "Rahman Ahmed" || session?.user?.email === "admin@injaazh.com" ? "M" : (session?.user?.name?.[0] || "M")).toUpperCase()}
                   </div>
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-card animate-pulse" />
@@ -175,8 +175,10 @@ export default function Header() {
           <DropdownMenuContent align="end" className="w-60 mt-3 p-2 rounded-2xl border border-border bg-card/95 backdrop-blur-3xl shadow-2xl animate-in slide-in-from-top-2 duration-200">
             <div className="px-3 py-2.5 mb-1">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Active Session</p>
-              <h4 className="text-sm font-bold text-foreground truncate">{session?.user?.name || "Enterprise User"}</h4>
-              <p className="text-xs text-muted-foreground truncate">{session?.user?.email || "user@injaazh.com"}</p>
+              <h4 className="text-sm font-bold text-foreground truncate">
+                {session?.user?.name === "Rahman Ahmed" || session?.user?.email === "admin@injaazh.com" || session?.user?.email === "mamun@injaazh.com" ? "Md Mamun Hossain" : (session?.user?.name || "Md Mamun Hossain")}
+              </h4>
+              <p className="text-xs text-muted-foreground truncate">{session?.user?.email === "admin@injaazh.com" ? "mamun@injaazh.com" : (session?.user?.email || "mamun@injaazh.com")}</p>
             </div>
             
             <DropdownMenuSeparator className="bg-border/60 my-1" />

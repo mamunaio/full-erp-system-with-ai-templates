@@ -32,6 +32,9 @@ export const authConfig = {
         session.user.tenantId = token.tenantId as string;
         session.user.tenantSlug = token.tenantSlug as string;
         session.user.permissions = token.permissions as any;
+        if (session.user.email === "admin@injaazh.com" || session.user.email === "mamun@injaazh.com" || token.name === "Rahman Ahmed") {
+          session.user.name = "Md Mamun Hossain";
+        }
       }
       return session;
     },
