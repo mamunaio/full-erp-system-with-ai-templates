@@ -162,7 +162,7 @@ export default function ReportGenerator() {
                       <Sparkles className="w-3 h-3 mr-2" /> AI Summary Preview
                    </h4>
                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 italic">
-                      "{result.aiSummary}"
+                      &ldquo;{result.aiSummary}&rdquo;
                    </p>
                 </div>
 

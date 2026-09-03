@@ -205,7 +205,7 @@ export default function HRCalendarPage() {
             HR Calendar
           </h1>
           <p className="text-slate-500 text-sm ml-1">
-            Manage your organization's schedule with AI-powered insights.
+            Manage your organization&apos;s schedule with AI-powered insights.
           </p>
         </div>
         <Button 

@@ -51,7 +51,7 @@ export default function PayrollPage() {
             Payroll <span className="text-injaazh-600">Hub</span>
           </h1>
           <p className="text-slate-500 text-sm font-medium">
-            Manage your company's financial heartbeat with precision.
+            Manage your company&apos;s financial heartbeat with precision.
           </p>
         </div>
         <div className="flex items-center space-x-3">

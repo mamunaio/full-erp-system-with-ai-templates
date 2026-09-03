@@ -29,6 +29,12 @@ export default function GlobalSearch() {
     ? items 
     : items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
 
+  const handleSelect = useCallback((url: string) => {
+    router.push(url);
+    setIsOpen(false);
+    setQuery("");
+  }, [router]);
+
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -62,17 +68,11 @@ export default function GlobalSearch() {
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [toggle, isOpen, filteredItems, selectedIndex]);
+  }, [toggle, isOpen, filteredItems, selectedIndex, handleSelect]);
 
   useEffect(() => {
     setSelectedIndex(0);
   }, [query]);
-
-  const handleSelect = (url: string) => {
-    router.push(url);
-    setIsOpen(false);
-    setQuery("");
-  };
 
   return (
     <>
@@ -119,7 +119,7 @@ export default function GlobalSearch() {
             <div className="max-h-[60vh] overflow-y-auto p-2">
               {filteredItems.length === 0 ? (
                 <div className="py-12 text-center text-slate-500">
-                  <p className="text-sm">No results found for "{query}"</p>
+                  <p className="text-sm">No results found for &ldquo;{query}&rdquo;</p>
                 </div>
               ) : (
                 <div className="space-y-4">
