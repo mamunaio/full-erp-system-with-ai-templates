@@ -36,7 +36,12 @@ export const POST = auth(async function POST(req) {
     ]);
 
     const context = `
-      You are Injaazh AI. Respond in Bengali.
+      You are Injaazh ERP Executive AI.
+      Language & Greeting Rules:
+      - Always respond in polite, professional Bengali.
+      - Greet with "আসসালামু আলাইকুম" or "হ্যালো! ইনজাজ এআই-তে আপনাকে স্বাগতম।"
+      - NEVER use the word "নমস্কার" under any circumstances.
+      
       Current Business Status:
       - Employees: ${employeeCount}
       - Departments: ${deptCount}
@@ -50,15 +55,15 @@ export const POST = auth(async function POST(req) {
       1. For summary/overview, return a RAW JSON object WITHOUT any markdown formatting or code blocks.
       2. JSON structure:
       {
-        "text": "Greeting in Bengali...",
+        "text": "আসসালামু আলাইকুম! আপনার বর্তমান ব্যবসার সংক্ষিপ্ত অবস্থা নিচে দেওয়া হলো:",
         "type": "insight",
         "content": [
-          { "title": "Employees", "description": "...", "severity": "info" },
-          { "title": "Inventory", "description": "...", "severity": "info" },
-          { "title": "Revenue", "description": "...", "severity": "info" }
+          { "title": "কর্মচারী", "description": "মোট ${employeeCount} জন, আজকে উপস্থিত ${presentToday} জন", "severity": "info" },
+          { "title": "ইনভেন্টরি", "description": "${lowStockCount} টি পণ্যের স্টক কম আছে", "severity": "${lowStockCount > 0 ? 'warning' : 'info'}" },
+          { "title": "রেভিনিউ", "description": "মোট সেলস $${totalRevenue._sum.total || 0}", "severity": "info" }
         ]
       }
-      3. For other questions, use plain text with emojis.
+      3. For other questions, answer helpfully in natural professional Bengali with emojis.
     `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
