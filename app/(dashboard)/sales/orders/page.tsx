@@ -48,9 +48,11 @@ export default function SalesOrdersPage() {
           <Button variant="outline" className="rounded-2xl h-14 px-8 border-slate-200 dark:border-slate-800 font-bold bg-white dark:bg-slate-900 shadow-sm active:scale-95 transition-all">
             <FileDown className="w-4 h-4 mr-3 text-slate-400" /> Export Orders
           </Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black shadow-xl shadow-indigo-600/20 active:scale-95 transition-all">
-            <Plus className="w-5 h-5 mr-3" /> New Order
-          </Button>
+          <Link href="/sales/orders/new">
+            <Button className="gold-gradient text-obsidian-950 rounded-2xl h-14 px-10 font-black shadow-xl shadow-gold-500/25 active:scale-95 transition-all cursor-pointer">
+              <Plus className="w-5 h-5 mr-2" /> New Order
+            </Button>
+          </Link>
         </div>
       </div>
 
