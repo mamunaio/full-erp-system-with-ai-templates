@@ -1,15 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
-  Sparkles, X, Send, Bot, Cpu
+  Sparkles, X, Send, Bot, Cpu, Trash2,
+  Users, Package, DollarSign, AlertTriangle, Info, CheckCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+interface InsightContent {
+  title: string;
+  description: string;
+  severity?: "info" | "warning" | "error" | "success";
+}
 
 interface ChatMessage {
   id: string;
   sender: "ai" | "user";
   text: string;
+  type?: "insight" | "text";
+  content?: InsightContent[];
   time: string;
 }
 
@@ -24,14 +34,37 @@ export default function AICopilotOverlay() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "m1",
-      sender: "ai",
-      text: "আসসালামু আলাইকুম! I am your Injaazh Enterprise AI Copilot. All ERP data streams (Finance, CRM, HRM, Inventory) are synchronized. What tactical intelligence do you require?",
-      time: "Just now",
-    },
-  ]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const initialGreeting: ChatMessage = {
+    id: "m1",
+    sender: "ai",
+    text: "আসসালামু আলাইকুম! আমি আপনার ইনজাজ এন্টারপ্রাইজ এআই কপাইলট। ফিন্যান্স, সিআরএম, এইচআর ও ইনভেন্টরির সমস্ত ডেটা স্ট্রিম সিঙ্ক্রোনাইজড। কীভাবে সাহায্য করতে পারি?",
+    time: "Just now",
+  };
+
+  const [messages, setMessages] = useState<ChatMessage[]>([initialGreeting]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isTyping, isOpen]);
+
+  const handleClearChat = () => {
+    setMessages([
+      {
+        id: Date.now().toString(),
+        sender: "ai",
+        text: "আসসালামু আলাইকুম! নতুন কনভারসেশন শুরু হয়েছে। যেকোনো প্রশ্ন করতে পারেন।",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }
+    ]);
+  };
 
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;
@@ -62,7 +95,9 @@ export default function AICopilotOverlay() {
           {
             id: (Date.now() + 1).toString(),
             sender: "ai",
-            text: data.text || data.response || "Analysis complete.",
+            text: data.text || data.response || "বিশ্লেষণ সম্পন্ন হয়েছে।",
+            type: data.type,
+            content: data.content,
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           },
         ]);
@@ -71,11 +106,11 @@ export default function AICopilotOverlay() {
       }
     } catch {
       setTimeout(() => {
-        let simulated = "I have analyzed your request against real-time telemetry. Key metrics are within optimal parameters.";
+        let simulated = "আপনার রিকোয়েস্টটি এন্টারপ্রাইজ ডেটার সাথে যাচাই করা হয়েছে। সমস্ত প্যারামিটার স্বাভাবিক রয়েছে।";
         if (query.toLowerCase().includes("revenue") || query.toLowerCase().includes("finance")) {
-          simulated = "Fiscal analysis indicates $1,248,500 YTD revenue with a +14.2% net margin. Next tax audit tranche is scheduled for Oct 15.";
+          simulated = "আর্থিক বিশ্লেষণ: YTD মোট রেভিনিউ $1,248,500 এবং নেট মার্জিন +14.2%। পরবর্তী ট্যাক্স অডিট ১৫ অক্টোবর নির্ধারিত।";
         } else if (query.toLowerCase().includes("inventory") || query.toLowerCase().includes("stock")) {
-          simulated = "Inventory telemetry shows 4,280 SKUs across 3 warehouses. 4 buffer thresholds require automated PO dispatch.";
+          simulated = "ইনভেন্টরি স্টেটাস: ৩টি গুদামে মোট ৪,২৮০টি এসকেইউ রয়েছে। ৪টি পণ্যের স্টক বাফারের নিচে রয়েছে।";
         }
 
         setMessages((prev) => [
@@ -87,7 +122,7 @@ export default function AICopilotOverlay() {
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           },
         ]);
-      }, 700);
+      }, 600);
     } finally {
       setIsTyping(false);
     }
@@ -119,7 +154,7 @@ export default function AICopilotOverlay() {
       {/* Floating Neural Chat Drawer */}
       {isOpen && (
         <div
-          className="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[420px] h-[580px] bg-card border border-border/80 rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200"
+          className="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[440px] h-[600px] max-h-[80vh] bg-card/95 backdrop-blur-3xl border border-border/80 rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200"
         >
           {/* Header */}
           <div className="p-4 border-b border-border/60 bg-background/50 flex items-center justify-between">
@@ -130,8 +165,8 @@ export default function AICopilotOverlay() {
               <div>
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-bold text-foreground font-heading">Injaazh Copilot</h4>
-                  <span className="text-[9px] font-extrabold text-gold-600 dark:text-gold-400 bg-gold-500/15 px-2 py-0.5 rounded-full border border-gold-500/30">
-                    Active
+                  <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -139,30 +174,70 @@ export default function AICopilotOverlay() {
                 </p>
               </div>
             </div>
-            <button 
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button 
+                type="button"
+                onClick={handleClearChat}
+                title="নতুন কনভারসেশন শুরু করুন"
+                className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              <button 
+                type="button"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close Chat"
+                className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Chat Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-background/30">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-background/30">
             {messages.map((m) => (
               <div 
                 key={m.id}
                 className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
               >
                 <div 
-                  className={`max-w-[85%] p-3.5 rounded-2xl text-xs leading-relaxed shadow-sm ${
+                  className={`max-w-[88%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm ${
                     m.sender === "user" 
-                      ? "gold-gradient text-obsidian-950 rounded-br-none font-semibold" 
+                      ? "gold-gradient text-obsidian-950 font-semibold rounded-br-none" 
                       : "bg-card border border-border/80 text-foreground rounded-bl-none shadow-md"
                   }`}
                 >
-                  {m.text}
+                  <p>{m.text}</p>
+
+                  {/* Structured Insight Cards */}
+                  {m.content && m.content.length > 0 && (
+                    <div className="mt-3 space-y-2 pt-2 border-t border-border/60">
+                      {m.content.map((item, idx) => (
+                        <div 
+                          key={idx}
+                          className={cn(
+                            "p-2.5 rounded-xl border text-xs flex items-start gap-2",
+                            item.severity === "warning" 
+                              ? "bg-amber-500/10 border-amber-500/25 text-foreground"
+                              : item.severity === "error"
+                              ? "bg-rose-500/10 border-rose-500/25 text-foreground"
+                              : "bg-background/80 border-border/70 text-foreground"
+                          )}
+                        >
+                          {item.severity === "warning" ? (
+                            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          ) : (
+                            <Info className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <span className="font-bold block text-foreground">{item.title}</span>
+                            <span className="text-[11px] text-muted-foreground leading-normal">{item.description}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <span className="text-[9px] text-muted-foreground mt-1 px-1">{m.time}</span>
               </div>
@@ -173,8 +248,12 @@ export default function AICopilotOverlay() {
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-bounce" />
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-bounce [animation-delay:0.2s]" />
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-bounce [animation-delay:0.4s]" />
+                <span className="text-xs text-muted-foreground ml-1.5">এআই উত্তর লিখছে...</span>
               </div>
             )}
+
+            {/* Auto-scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Prompt Chips */}
